@@ -1,0 +1,8 @@
+console/target
+models
+orchestrator
+query-engine
+sqlite-extionsion
+sqlite-vectorx/target
+storage-engine
+vector-index-engine
