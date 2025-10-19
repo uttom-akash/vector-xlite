@@ -1,66 +1,46 @@
-use sqlite_vectorx::VectorXSqlite;
+use sqlite_vectorx::{CollectionConfigBuilder, DistanceFunction, VectorXLite};
+use rusqlite::Connection;
 
 fn main() {
-    // println!("Hello, world!");
+    let sqlite_connection = Connection::open_in_memory().unwrap();
 
-    // let nb_elem = 16;
-    // let max_nb_connection = 24;
-    // let nb_layer = 16.min((nb_elem as f32).ln().trunc() as usize);
-    // let ef_construction = 400;
+    let vs = VectorXLite::new(sqlite_connection).unwrap();
 
-    // let index = VectorIndexEngineImpl::new(max_nb_connection, nb_elem, nb_layer, ef_construction);
-
-    // index.insert(Point {
-    //     id: 1,
-    //     vector: vec![1.0, 2.0, 3.0],
-    // });
-    // index.insert(Point {
-    //     id: 2,
-    //     vector: vec![4.0, 5.0, 6.0],
-    // });
-    // index.insert(Point {
-    //     id: 3,
-    //     vector: vec![7.0, 8.0, 9.0],
-    // });
-
-    // let results = index.search(vec![7.0, 8.0, 9.0], 2);
-    // println!("The result of adding 10 and 15 is: {:?}", results);
-
-    let vs = VectorXSqlite::new().unwrap();
-    match vs.create_collection(
-        "person",
-        "create table person (rowid integer primary key, name text)",
-    ) {
+    let config = CollectionConfigBuilder::default()
+        .distance(DistanceFunction::L2)
+        .payload_table_schema("create table person (rowid integer primary key, name text)")
+        .build(); 
+    
+    match vs.create_collection(config) {
         Ok(_) => {
             vs.insert_vector(
-                "person",
                 1,
                 &vec![1.0, 2.0, 3.0],
                 "insert into person(rowid, name) values (?1, 'Alice')",
             )
             .unwrap();
             vs.insert_vector(
-                "person",
                 2,
                 &vec![4.0, 5.0, 6.0],
-                "insert into person(rowid, name) values (?1, 'Bob')",
+                "insert into person(name, rowid) values ('Bob', ?1)",
             )
             .unwrap();
             vs.insert_vector(
-                "person",
                 3,
                 &vec![7.0, 8.0, 9.0],
-                "insert into person(rowid, name) values (?1, 'Charlie')",
+                "insert into person values ('Charlie')",
+            )
+            .unwrap();
+
+            vs.insert_vector(
+                5,
+                &vec![17.0, 11.0, 9.0],
+                "insert into person(name) values ('Charlie')",
             )
             .unwrap();
 
             let results = vs
-                .search_vectors(
-                    "person",
-                    &vec![7.0, 8.0, 9.0],
-                    1,
-                    "select * from person as p where p.name in ('Charlie')",
-                )
+                .search_vectors(&vec![7.0, 8.0, 9.0], 10, "select * from person")
                 .unwrap();
 
             println!("Search results: {:?}", results);

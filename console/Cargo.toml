@@ -5,4 +5,5 @@ edition = "2024"
 
 [dependencies]
 sqlite_vectorx = {path = "../sqlite-vectorx"}
+rusqlite = { version = "0.37.0", features = ["load_extension" ]}
 
