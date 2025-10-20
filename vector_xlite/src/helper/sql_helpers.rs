@@ -6,7 +6,7 @@ pub fn get_virtual_table_name(table_name: &str) -> String {
     format!("vt_{}", table_name)
 }
 
-pub fn inject_rowid(sql: &str, rowid: i64) -> String {
+pub fn inject_rowid(sql: &str, rowid: u64) -> String {
     let rowid_str = format!("{}", rowid);
 
     // Matches both cases: with or without explicit column list
@@ -71,12 +71,18 @@ pub fn replace_select_with_row_ids(query: &str) -> String {
     re.replace(query, "SELECT rowid FROM").to_string()
 }
 
-pub fn parse_table_name(sql: &str) -> Option<String> {
-    let re = Regex::new(r"(?i)\b(?:table|into|from)\s+([a-zA-Z_][a-zA-Z0-9_]*)").unwrap();
-
-    re.captures(sql)
-        .and_then(|caps| caps.get(1))
-        .map(|m| m.as_str().to_string())
+pub fn parse_collection_name(sql_opt: Option<&String>) -> Option<String> {
+    
+    match sql_opt {
+        Some(sql) => {
+            let re = Regex::new(r"(?i)\b(?:table|into|from)\s+([a-zA-Z_][a-zA-Z0-9_]*)").unwrap();
+            
+            re.captures(sql)
+                .and_then(|caps| caps.get(1))
+                .map(|m| m.as_str().to_string())
+        }
+        None => None,
+    }
 }
 
 pub fn get_value_as_string(row: &Row, i: usize) -> String {
