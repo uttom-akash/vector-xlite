@@ -3,6 +3,17 @@ name = "vector_xlite"
 version = "0.1.0"
 edition = "2024"
 
+
+authors = ["Uttom Akash <uttom.akash71@gmail.com>"]
+description = "VectorXLite: search vector embeddings and payload."
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/uttom-akash/vector-xlite"
+readme = "../README.md"
+keywords = ["vector", "sqlite", "extension", "search", "embeddings", "rust"]
+categories = ["database", "development-tools"]
+homepage = "https://github.com/uttom-akash/vector-xlite"
+documentation = "https://docs.rs/vector_xlite"
+
 [dependencies]
 sqlite-loadable = { version = "0.0.5", default-features = false }
 rusqlite = { version = "0.37.0", features = ["load_extension" ]}
