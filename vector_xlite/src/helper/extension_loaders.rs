@@ -2,9 +2,9 @@ use rusqlite::{Connection, LoadExtensionGuard, Result};
 use std::fs::File;
 use std::io::Write;
 use std::env;
-use std::sync::Arc;
+use std::rc::Rc;
 
-pub fn load_sqlite_vector_extension(conn: Arc<Connection>) -> Result<()> {
+pub fn load_sqlite_vector_extension(conn: Rc<Connection>) -> Result<()> {
     #[cfg(target_os = "linux")]
     const LIB_BYTES: &[u8] =
         include_bytes!(concat!(env!("CARGO_MANIFEST_DIR"), "/assets/vectorlite.so"));

@@ -1,13 +1,13 @@
 use crate::{executor::query_executor::QueryExecutor, types::QueryPlan};
 use rusqlite::{Connection, Result};
-use std::{collections::HashMap, sync::Arc};
+use std::{collections::HashMap, rc::Rc};
 
 pub(crate) struct SqliteQueryExecutor {
-    conn: Arc<Connection>,
+    conn: Rc<Connection>,
 }
 
 impl SqliteQueryExecutor {
-    pub fn new(conn: Arc<Connection>) -> Box<dyn QueryExecutor> {
+    pub fn new(conn: Rc<Connection>) -> Box<dyn QueryExecutor> {
         Box::new(SqliteQueryExecutor { conn })
     }
 }

@@ -4,7 +4,7 @@ use crate::planner::{QueryPlanner,SqliteQueryPlanner};
 use crate::types::*;
 use rusqlite::{Connection, Result};
 use std::collections::HashMap;
-use std::sync::Arc;
+use std::rc::Rc;
 
 pub struct VectorXLite {
     query_planner: Box<dyn QueryPlanner>,
@@ -14,14 +14,14 @@ pub struct VectorXLite {
 impl VectorXLite {
     pub fn new<T>(sqlite_connection: T) -> Result<VectorXLite>
     where
-        T: Into<Arc<Connection>>,
+        T: Into<Rc<Connection>>,
     {
         let sqlite_connection = sqlite_connection.into();
 
-        load_sqlite_vector_extension(Arc::clone(&sqlite_connection))?;
+        load_sqlite_vector_extension(Rc::clone(&sqlite_connection))?;
 
         Ok(VectorXLite {
-            query_planner: SqliteQueryPlanner::new(Arc::clone(&sqlite_connection)),
+            query_planner: SqliteQueryPlanner::new(Rc::clone(&sqlite_connection)),
             query_executor: SqliteQueryExecutor::new(sqlite_connection),
         })
     }

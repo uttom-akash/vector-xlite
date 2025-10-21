@@ -1,9 +1,11 @@
-use std::sync::Arc;
+
+
+use std::rc::Rc;
 
 use rusqlite::Connection;
 use vector_xlite::{VectorXLite, types::*};
 
-pub fn run_complex_example(vlite: &VectorXLite, sqlite_conn: Arc<Connection>) {
+pub fn run_complex_example(vlite: &VectorXLite, sqlite_conn: Rc<Connection>) {
     let create_authors_table = r#"
     create table authors (
             id integer primary key,

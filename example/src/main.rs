@@ -1,4 +1,6 @@
-use std::sync::Arc;
+
+
+use std::rc::Rc;
 
 use rusqlite::Connection;
 use vector_xlite::VectorXLite;
@@ -10,10 +12,10 @@ mod simple_example;
 mod complex_example;
 
 fn main() {
-    let sqlite_connection = Arc::new(Connection::open_in_memory().unwrap());
+    let sqlite_connection = Rc::new(Connection::open_in_memory().unwrap());
 
     
-    let vlite = VectorXLite::new(Arc::clone(&sqlite_connection)).unwrap();
+    let vlite = VectorXLite::new(Rc::clone(&sqlite_connection)).unwrap();
 
     run_simple_example(&vlite);
 

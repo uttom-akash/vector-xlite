@@ -1,15 +1,16 @@
+use std::rc::Rc;
+
 use crate::helper::*;
 use crate::planner::query_planner::QueryPlanner;
 use crate::types::{CollectionConfig, InsertPoint, QueryPlan, SearchPoint};
 use rusqlite::Connection;
-use std::sync::Arc;
 
 pub(crate) struct SqliteQueryPlanner {
-    conn: Arc<Connection>,
+    conn: Rc<Connection>,
 }
 
 impl SqliteQueryPlanner {
-    pub fn new(conn: Arc<Connection>) -> Box<dyn QueryPlanner> {
+    pub fn new(conn: Rc<Connection>) -> Box<dyn QueryPlanner> {
         Box::new(SqliteQueryPlanner { conn })
     }
 }
