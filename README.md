@@ -1,11 +1,13 @@
 # 🧠 sqlite-vectorx
 
-**VectorXLite** — A lightweight SQLite extension for **vector search** with payload support.
+**VectorXLite** — A lightweight SQLite extension for **vector search** with payload support. 
 
-This repository demonstrates how to use the `vector_xlite` crate to:
-- Create a collection with embeddings.
-- Insert vectors and associated payload data.
-- Perform fast vector similarity search (e.g., cosine, dot, L2).
+This demonstrates how to use the `vector_xlite` crate to:
+
+- Create a collection with vector embeddings and optional payload data.  
+- Insert and manage vectors along with associated metadata.  
+- Perform fast vector similarity search (e.g., **Cosine**, **Dot**, or **L2** distance).  
+- Filter and query payloads using standard **SQL** alongside vector search.
 
 ---
 
