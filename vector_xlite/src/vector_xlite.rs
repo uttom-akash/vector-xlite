@@ -1,27 +1,28 @@
-use crate::executor::query_executor::QueryExecutor;
-use crate::helper::extension_loaders::*;
-use crate::planner::query_planner::QueryPlanner;
+use crate::executor::{QueryExecutor,SqliteQueryExecutor};
+use crate::helper::*;
+use crate::planner::{QueryPlanner,SqliteQueryPlanner};
 use crate::types::*;
 use rusqlite::{Connection, Result};
 use std::collections::HashMap;
-use std::sync::Arc;
+use std::rc::Rc;
 
 pub struct VectorXLite {
-    pub conn: Arc<Connection>,
-    pub query_planner: QueryPlanner,
-    pub query_executor: QueryExecutor,
+    query_planner: Box<dyn QueryPlanner>,
+    query_executor: Box<dyn QueryExecutor>,
 }
 
 impl VectorXLite {
-    pub fn new(sqlite_connection: Connection) -> Result<VectorXLite> {
-        load_sqlite_vector_extension(&sqlite_connection)?;
+    pub fn new<T>(sqlite_connection: T) -> Result<VectorXLite>
+    where
+        T: Into<Rc<Connection>>,
+    {
+        let sqlite_connection = sqlite_connection.into();
 
-        let sqlite_connection = Arc::new(sqlite_connection);
+        load_sqlite_vector_extension(Rc::clone(&sqlite_connection))?;
 
         Ok(VectorXLite {
-            conn: Arc::clone(&sqlite_connection),
-            query_planner: QueryPlanner::new(Arc::clone(&sqlite_connection)),
-            query_executor: QueryExecutor::new(sqlite_connection),
+            query_planner: SqliteQueryPlanner::new(Rc::clone(&sqlite_connection)),
+            query_executor: SqliteQueryExecutor::new(sqlite_connection),
         })
     }
 }
