@@ -11,7 +11,7 @@ pub fn inject_rowid(sql: &str, rowid: u64) -> String {
 
     // Matches both cases: with or without explicit column list
     let re_with_cols =
-        Regex::new(r"(?i)^insert\s+into\s+([^\s(]+)\s*\(([^)]*)\)\s*values\s*\(([^)]*)\)").unwrap();
+        Regex::new(r"(?i)insert\s+into\s+([^\s(]+)\s*\(([^)]*)\)\s*values\s*\(([^)]*)\)").unwrap();
     let re_no_cols = Regex::new(r"(?i)^insert\s+into\s+([^\s(]+)\s*values\s*\(([^)]*)\)").unwrap();
 
     if let Some(caps) = re_with_cols.captures(sql) {
@@ -58,6 +58,7 @@ pub fn inject_rowid(sql: &str, rowid: u64) -> String {
 }
 
 pub fn replace_select_with_count(query: &str) -> String {
+    
     // Regex: match SELECT ... FROM (non-greedy)
     let re = Regex::new(r"(?i)^SELECT\s+.*?\s+FROM").unwrap();
     // Replace with SELECT count(*) FROM
@@ -66,7 +67,7 @@ pub fn replace_select_with_count(query: &str) -> String {
 
 pub fn replace_select_with_row_ids(query: &str) -> String {
     // Regex: match SELECT ... FROM (non-greedy)
-    let re = Regex::new(r"(?i)^SELECT\s+.*?\s+FROM").unwrap();
+    let re = Regex::new(r"(?is)SELECT\s+.*?\s+FROM").unwrap();
     // Replace with SELECT count(*) FROM
     re.replace(query, "SELECT rowid FROM").to_string()
 }

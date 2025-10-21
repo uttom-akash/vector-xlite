@@ -4,8 +4,9 @@ pub struct CollectionConfig {
     pub collection_name: String,
     pub dimension: u16,
     pub distance: DistanceFunction,
-    pub payload_table_schema: Option<String>,
     pub index_file_path: Option<String>,
+    pub max_elements: Option<u32>,
+    pub payload_table_schema: Option<String>,
 }
 
 impl Default for CollectionConfig {
@@ -16,6 +17,7 @@ impl Default for CollectionConfig {
             distance: DistanceFunction::Cosine,
             payload_table_schema: None,
             index_file_path: None,
+            max_elements: Some(100000),
         }
     }
 }
@@ -28,11 +30,12 @@ impl CollectionConfig {
 
 #[derive(Default)]
 pub struct CollectionConfigBuilder {
-    name: Option<String>,
     dimension: Option<u16>,
     distance: Option<DistanceFunction>,
-    payload_table_schema: Option<String>,
     index_file_path: Option<String>,
+    max_elements: Option<u32>,
+    name: Option<String>,
+    payload_table_schema: Option<String>,
 }
 
 impl CollectionConfigBuilder {
@@ -61,6 +64,11 @@ impl CollectionConfigBuilder {
         self
     }
 
+    pub fn max_elements(mut self, max_elems: u32) -> Self {
+        self.max_elements = Some(max_elems);
+        self
+    }
+
     pub fn build(self) -> Result<CollectionConfig, &'static str> {
         if self.name.is_none() && self.payload_table_schema.is_none() {
             return Err("Either collection_name or payload_table_schema must be provided.".into());
@@ -75,6 +83,7 @@ impl CollectionConfigBuilder {
             distance: self.distance.unwrap_or(default.distance),
             payload_table_schema: self.payload_table_schema.or(default.payload_table_schema),
             index_file_path: self.index_file_path.or(default.index_file_path),
+            max_elements: self.max_elements.or(default.max_elements),
         })
     }
 }

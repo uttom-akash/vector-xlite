@@ -1,0 +1,30 @@
+# Clippy configuration for vector_xlite
+# - Enable broad warnings including pedantic, but allow a small set of noisy lints.
+# - Deny obviously unsafe/undesirable patterns (unwrap/expect/println/panic/dbg/todo).
+# Adjust per project preference.
+
+warn = [
+  "clippy::all",
+  "clippy::pedantic"
+]
+
+allow = [
+  "clippy::module_name_repetitions",
+  "clippy::missing_errors_doc",
+  "clippy::missing_panics_doc",
+  "clippy::must_use_candidate",
+  "clippy::option_if_let_else",
+  "clippy::similar_names"
+]
+
+deny = [
+  "clippy::unwrap_used",
+  "clippy::expect_used",
+  "clippy::panic",
+  "clippy::print_stdout",
+  "clippy::dbg_macro",
+  "clippy::todo"
+]
+
+# Optional: minimum supported Rust version (helps CI/tooling)
+# msrv = "1.70"
