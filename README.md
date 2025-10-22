@@ -1,6 +1,6 @@
 # 🧠 vector-xlite
 
-**VectorXLite** — A fast, lightweight vector search engine with payload support and SQL-based filtering.
+**VectorXLite** — A fast, lightweight vector search with payload support and SQL-based filtering.
 
 This demonstrates how to use the `vector_xlite` crate to:
 
