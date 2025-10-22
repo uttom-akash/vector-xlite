@@ -1,8 +1,9 @@
+use crate::error::VecXError;
 use crate::executor::{QueryExecutor,SqliteQueryExecutor};
 use crate::helper::*;
 use crate::planner::{QueryPlanner,SqliteQueryPlanner};
 use crate::types::*;
-use rusqlite::{Connection, Result};
+use rusqlite::{Connection};
 use std::collections::HashMap;
 use std::rc::Rc;
 
@@ -12,7 +13,7 @@ pub struct VectorXLite {
 }
 
 impl VectorXLite {
-    pub fn new<T>(sqlite_connection: T) -> Result<VectorXLite>
+    pub fn new<T>(sqlite_connection: T) -> Result<VectorXLite, VecXError>
     where
         T: Into<Rc<Connection>>,
     {
@@ -28,29 +29,23 @@ impl VectorXLite {
 }
 
 impl VectorXLite {
-    pub fn create_collection(&self, collection_config: CollectionConfig) -> Result<()> {
+    pub fn create_collection(&self, collection_config: CollectionConfig) -> Result<(), VecXError> {
         let query_plans = self
             .query_planner
-            .plan_create_collection(collection_config)
-            .unwrap();
+            .plan_create_collection(collection_config)?;
 
         self.query_executor
             .execute_create_collection_query(query_plans)
     }
 
-    pub fn insert(&self, create_point: InsertPoint) -> Result<()> {
-        let query_plans = self.query_planner.plan_insert_query(create_point).unwrap();
+    pub fn insert(&self, create_point: InsertPoint) -> Result<(), VecXError> {
+        let query_plans = self.query_planner.plan_insert_query(create_point)?;
 
         self.query_executor.execute_insert_query(query_plans)
     }
 
-    pub fn search(&self, search_point: SearchPoint) -> Result<Vec<HashMap<String, String>>> {
-        let query_plan = self.query_planner.plan_search_query(search_point);
-
-        let query_plan = match query_plan {
-            Ok(plan) => plan,
-            Err(_) => return Err(rusqlite::Error::InvalidQuery),
-        };
+    pub fn search(&self, search_point: SearchPoint) -> Result<Vec<HashMap<String, String>>, VecXError> {
+        let query_plan = self.query_planner.plan_search_query(search_point)?;
 
         self.query_executor.execute_search_query(query_plan)
     }

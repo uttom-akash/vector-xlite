@@ -1,5 +1,9 @@
-pub mod extension_loaders;
-pub mod sql_helpers;
+pub mod extension_loader;
+pub mod sql_helper;
+pub mod row_parser;
+pub mod names;
 
-pub use extension_loaders::*;
-pub use sql_helpers::*;
+pub use extension_loader::*;
+pub use sql_helper::*;
+pub use row_parser::*;
+pub use names::*;

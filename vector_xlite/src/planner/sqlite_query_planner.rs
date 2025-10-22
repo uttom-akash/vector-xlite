@@ -1,5 +1,6 @@
 use std::rc::Rc;
 
+use crate::error::VecXError;
 use crate::helper::*;
 use crate::planner::query_planner::QueryPlanner;
 use crate::types::{CollectionConfig, InsertPoint, QueryPlan, SearchPoint};
@@ -19,15 +20,16 @@ impl QueryPlanner for SqliteQueryPlanner {
     fn plan_create_collection(
         &self,
         collection_config: CollectionConfig,
-    ) -> Result<Vec<QueryPlan>, &'static str> {
+    ) -> Result<Vec<QueryPlan>, VecXError> {
         let mut query_plans: Vec<QueryPlan> = Vec::new();
-        let virtual_table_name = get_virtual_table_name(collection_config.collection_name.as_str());
+        let virtual_table_name = get_vector_table_name(collection_config.collection_name.as_str());
 
         let mut virtual_table_query = format!(
-            "create virtual table {table_name} using vectorlite(vector_embedding float32[{vector_dimension}] {distance_func}, hnsw(max_elements=100000))",
+            "create virtual table {table_name} using vectorlite(vector_embedding float32[{vector_dimension}] {distance_func}, hnsw(max_elements={max_elements}))",
             table_name = virtual_table_name,
             vector_dimension = collection_config.dimension,
-            distance_func = collection_config.distance.as_str()
+            distance_func = collection_config.distance.as_str(),
+            max_elements = collection_config.max_elements
         );
 
         if let Some(index_path) = collection_config.index_file_path {
@@ -51,12 +53,12 @@ impl QueryPlanner for SqliteQueryPlanner {
         Ok(query_plans)
     }
 
-    fn plan_insert_query(&self, create_point: InsertPoint) -> Result<Vec<QueryPlan>, &'static str> {
+    fn plan_insert_query(&self, create_point: InsertPoint) -> Result<Vec<QueryPlan>, VecXError> {
         let mut query_plans: Vec<QueryPlan> = Vec::new();
 
         let vector_json = format!("{:?}", create_point.vector);
 
-        let virtual_table_name = get_virtual_table_name(create_point.collection_name.as_str());
+        let virtual_table_name = get_vector_table_name(create_point.collection_name.as_str());
 
         let insert_query = format!(
             "insert into {}(rowid, vector_embedding) values (?, vector_from_json(?))",
@@ -83,9 +85,9 @@ impl QueryPlanner for SqliteQueryPlanner {
         Ok(query_plans)
     }
 
-    fn plan_search_query(&self, search_point: SearchPoint) -> Result<QueryPlan, &'static str> {
+    fn plan_search_query(&self, search_point: SearchPoint) -> Result<QueryPlan, VecXError> {
         let vector_json = format!("{:?}", search_point.vector);
-        let virtual_table_name = get_virtual_table_name(search_point.collection_name.as_str());
+        let virtual_table_name = get_vector_table_name(search_point.collection_name.as_str());
 
         // --- Case 1: No payload filter ---
         if search_point.payload_search_query.is_none() {
