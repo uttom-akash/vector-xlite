@@ -1,6 +1,6 @@
 # 🧠 sqlite-vectorx
 
-**VectorXLite** — A lightweight SQLite extension for **vector search** with payload support. 
+**VectorXLite** — A fast and lightweight SQLite extension for vector search with payload support.
 
 This demonstrates how to use the `vector_xlite` crate to:
 
