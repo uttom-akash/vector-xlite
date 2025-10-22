@@ -1,5 +1,5 @@
 
-use crate::helper::sql_helpers::parse_collection_name;
+use crate::helper::sql_helper::*;
 
 #[derive(Debug, Clone)]
 pub struct InsertPoint {

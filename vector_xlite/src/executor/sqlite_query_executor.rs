@@ -1,4 +1,4 @@
-use crate::{executor::query_executor::QueryExecutor, types::QueryPlan};
+use crate::{error::VecXError, executor::query_executor::QueryExecutor, types::QueryPlan};
 use rusqlite::{Connection, Result};
 use std::{collections::HashMap, rc::Rc};
 
@@ -13,7 +13,7 @@ impl SqliteQueryExecutor {
 }
 
 impl QueryExecutor for SqliteQueryExecutor {
-    fn execute_create_collection_query(&self, query_plans: Vec<QueryPlan>) -> Result<()> {
+    fn execute_create_collection_query(&self, query_plans: Vec<QueryPlan>) -> Result<(), VecXError> {
         query_plans.iter().try_for_each(|plan| {
             self.conn
                 .execute(&plan.sql, rusqlite::params_from_iter(&plan.params))?;
@@ -21,7 +21,7 @@ impl QueryExecutor for SqliteQueryExecutor {
         })
     }
 
-    fn execute_insert_query(&self, query_plans: Vec<QueryPlan>) -> rusqlite::Result<()> {
+    fn execute_insert_query(&self, query_plans: Vec<QueryPlan>) -> rusqlite::Result<(), VecXError> {
         query_plans.iter().try_for_each(|plan| {
             self.conn
                 .execute(&plan.sql, rusqlite::params_from_iter(&plan.params))?;
@@ -32,7 +32,7 @@ impl QueryExecutor for SqliteQueryExecutor {
     fn execute_search_query(
         &self,
         query_plan: QueryPlan,
-    ) -> rusqlite::Result<Vec<HashMap<String, String>>> {
+    ) -> rusqlite::Result<Vec<HashMap<String, String>>, VecXError> {
         let mut stmt = self.conn.prepare(&query_plan.sql)?;
         let rows = stmt
             .query_map(

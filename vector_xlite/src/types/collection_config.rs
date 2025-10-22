@@ -1,11 +1,11 @@
-use crate::{helper::sql_helpers::parse_collection_name, types::enums::DistanceFunction};
+use crate::{helper::sql_helper::*, types::enums::DistanceFunction};
 
 pub struct CollectionConfig {
     pub collection_name: String,
     pub dimension: u16,
     pub distance: DistanceFunction,
     pub index_file_path: Option<String>,
-    pub max_elements: Option<u32>,
+    pub max_elements: u32,
     pub payload_table_schema: Option<String>,
 }
 
@@ -17,7 +17,7 @@ impl Default for CollectionConfig {
             distance: DistanceFunction::Cosine,
             payload_table_schema: None,
             index_file_path: None,
-            max_elements: Some(100000),
+            max_elements: 100000,
         }
     }
 }
@@ -83,7 +83,7 @@ impl CollectionConfigBuilder {
             distance: self.distance.unwrap_or(default.distance),
             payload_table_schema: self.payload_table_schema.or(default.payload_table_schema),
             index_file_path: self.index_file_path.or(default.index_file_path),
-            max_elements: self.max_elements.or(default.max_elements),
+            max_elements: self.max_elements.unwrap_or(default.max_elements),
         })
     }
 }
