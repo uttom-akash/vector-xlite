@@ -1,4 +1,4 @@
-# 🧠 sqlite-vectorx
+# 🧠 vector-xlite
 
 **VectorXLite** — A fast, lightweight vector search with payload support and SQL-based filtering.
 
