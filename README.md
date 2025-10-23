@@ -9,6 +9,8 @@ This demonstrates how to use the `vector_xlite` crate to:
 - Perform fast vector similarity search (e.g., **Cosine**, **Dot**, or **L2** distance).  
 - Filter and query payloads using standard **SQL** alongside vector search.
 
+Crate : https://crates.io/crates/vector_xlite
+
 ---
 
 ## 🚀 Console Example — `vector_xlite`
