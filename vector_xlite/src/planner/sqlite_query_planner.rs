@@ -33,7 +33,7 @@ impl QueryPlanner for SqliteQueryPlanner {
         );
 
         if let Some(index_path) = collection_config.index_file_path {
-            virtual_table_query = format!("{} , {}", virtual_table_query, index_path);
+            virtual_table_query = format!("{} , {})", &virtual_table_query[0..virtual_table_query.len()-1], index_path);
         }
 
         query_plans.push(QueryPlan {
