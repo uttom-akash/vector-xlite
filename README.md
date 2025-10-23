@@ -1,6 +1,8 @@
 # 🧠 sqlite-vectorx
 
-**VectorXLite** — A lightweight SQLite extension for **vector search** with payload support. 
+**VectorXLite** — A fast, lightweight vector search with payload support and SQL-based filtering.
+
+Crate : https://crates.io/crates/vector_xlite
 
 This demonstrates how to use the `vector_xlite` crate to:
 
@@ -10,6 +12,66 @@ This demonstrates how to use the `vector_xlite` crate to:
 - Filter and query payloads using standard **SQL** alongside vector search.
 
 ---
+
+## 🧱 Step-by-Step Breakdown
+
+### 1. Create the Collection
+
+```rust
+let config = CollectionConfigBuilder::default()
+    .collection_name("person")
+    .distance(DistanceFunction::Cosine)
+    .vector_dimension(4)
+    .payload_table_schema("create table person (rowid integer primary key, name text)")
+    .build()
+    .unwrap();
+
+vs.create_collection(config).unwrap();
+```
+
+This defines:
+
+- collection_name — logical name for your vector data
+- distance — similarity metric (Cosine, L2, or Dot)
+- vector_dimension — length of the embedding vector
+- payload_table_schema — SQL used to store associated metadata
+
+### 2. Insert Vector Points
+
+Each vector point includes an id, vector embedding, and an SQL payload insertion query.
+
+```
+let point = InsertPoint::builder()
+    .collection_name("person")
+    .id(1)
+    .vector(vec![1.0, 2.0, 3.0, 4.0])
+    .payload_insert_query("insert into person(rowid, name) values (?1, 'Alice')")
+    .build()
+    .unwrap();
+
+vs.insert(point).unwrap();
+```
+
+Use ?1 as a placeholder to bind the vector ID in your SQL statement.
+
+### 3. Search for Similar Vectors
+
+Perform a similarity search with a given vector and get top matches:
+
+```rust
+let search_point = SearchPoint::builder()
+    .collection_name("person")
+    .vector(vec![7.0, 8.0, 9.0, 2.0])
+    .top_k(10)
+    .payload_search_query("select * from person")
+    .build()
+    .unwrap();
+
+let results = vs.search(search_point).unwrap();
+```
+
+This fetches the top-K most similar vectors from the collection, along with their payloads.
+
 
 ## 🚀 Console Example — `vector_xlite`
 
@@ -126,66 +188,9 @@ fn main() {
 }
 ```
 
-## 🧱 Step-by-Step Breakdown
 
-### 1. Create the Collection
 
-```rust
-let config = CollectionConfigBuilder::default()
-    .collection_name("person")
-    .distance(DistanceFunction::Cosine)
-    .vector_dimension(4)
-    .payload_table_schema("create table person (rowid integer primary key, name text)")
-    .build()
-    .unwrap();
-
-vs.create_collection(config).unwrap();
-```
-
-This defines:
-
-- collection_name — logical name for your vector data
-- distance — similarity metric (Cosine, L2, or Dot)
-- vector_dimension — length of the embedding vector
-- payload_table_schema — SQL used to store associated metadata
-
-### 2. Insert Vector Points
-
-Each vector point includes an id, vector embedding, and an SQL payload insertion query.
-
-```
-let point = InsertPoint::builder()
-    .collection_name("person")
-    .id(1)
-    .vector(vec![1.0, 2.0, 3.0, 4.0])
-    .payload_insert_query("insert into person(rowid, name) values (?1, 'Alice')")
-    .build()
-    .unwrap();
-
-vs.insert(point).unwrap();
-```
-
-Use ?1 as a placeholder to bind the vector ID in your SQL statement.
-
-### 3. Search for Similar Vectors
-
-Perform a similarity search with a given vector and get top matches:
-
-```rust
-let search_point = SearchPoint::builder()
-    .collection_name("person")
-    .vector(vec![7.0, 8.0, 9.0, 2.0])
-    .top_k(10)
-    .payload_search_query("select * from person")
-    .build()
-    .unwrap();
-
-let results = vs.search(search_point).unwrap();
-```
-
-This fetches the top-K most similar vectors from the collection, along with their payloads.
-
-## Complex Example
+## Details Example
 
 ```rust
 
