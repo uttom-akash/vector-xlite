@@ -11,7 +11,7 @@ pub(crate) struct SqliteQueryExecutor {
 impl SqliteQueryExecutor {
     pub fn new(conn_pool: Pool<SqliteConnectionManager>) -> Box<dyn QueryExecutor> {
         Box::new(SqliteQueryExecutor {
-            conn_pool: conn_pool,
+            conn_pool,
         })
     }
 }
