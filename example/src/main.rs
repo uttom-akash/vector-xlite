@@ -1,23 +1,26 @@
-
-
-use std::rc::Rc;
-
-use rusqlite::Connection;
-use vector_xlite::VectorXLite;
-
-use crate::simple_example::run_simple_example;
 use crate::complex_example::run_complex_example;
+use crate::simple_example::run_simple_example;
+use r2d2::Pool;
+use r2d2_sqlite::SqliteConnectionManager;
+use vector_xlite::{VectorXLite, customizer::SqliteConnectionCustomizer};
 
-mod simple_example;
 mod complex_example;
+mod simple_example;
 
 fn main() {
-    let sqlite_connection = Rc::new(Connection::open_in_memory().unwrap());
+    let manager = SqliteConnectionManager::memory();
 
-    
-    let vlite = VectorXLite::new(Rc::clone(&sqlite_connection)).unwrap();
+    let pool = Pool::builder()
+        .max_size(15)
+        .connection_customizer(SqliteConnectionCustomizer::new())
+        .build(manager)
+        .unwrap();
+
+    let vlite = VectorXLite::new(pool.clone()).unwrap();
 
     run_simple_example(&vlite);
 
-    run_complex_example(&vlite, sqlite_connection);
+    println!("--- * ---");
+
+    run_complex_example(&vlite, pool);
 }

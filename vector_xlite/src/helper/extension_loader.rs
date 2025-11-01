@@ -3,7 +3,6 @@ use std::env;
 use std::fs::{self, OpenOptions};
 use std::io::Write;
 use std::path::PathBuf;
-use std::rc::Rc;
 use std::sync::Mutex;
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -14,12 +13,12 @@ use crate::error::VecXError;
 static EXT_LOAD_MUTEX: Lazy<Mutex<()>> = Lazy::new(|| Mutex::new(()));
 
 /// Default loader that uses the embedded asset bytes (keeps existing API).
-pub fn load_sqlite_vector_extension(conn: Rc<Connection>) -> Result<(), VecXError> {
+pub fn load_sqlite_vector_extension(conn: &mut Connection) -> Result<(), VecXError> {
     // call the more flexible loader with the included bytes and no custom name
-    load_sqlite_vector_extension_with_bytes(conn.as_ref(), embedded_lib_bytes())
+    load_sqlite_vector_extension_with_bytes(conn, embedded_lib_bytes())
 }
 
-pub fn create_unique_temp_filename(attempts: u8) -> PathBuf {
+fn create_unique_temp_filename(attempts: u8) -> PathBuf {
     // determine platform extension
     #[cfg(target_os = "linux")]
     let ext = "so";
@@ -41,8 +40,8 @@ pub fn create_unique_temp_filename(attempts: u8) -> PathBuf {
 
 /// Flexible loader: accepts library bytes and an optional temporary filename.
 /// - `lib_bytes`: bytes of the native library (e.g. from include_bytes!)
-pub fn load_sqlite_vector_extension_with_bytes(
-    conn: &Connection,
+fn load_sqlite_vector_extension_with_bytes(
+    conn: &mut Connection,
     lib_bytes: &[u8],
 ) -> Result<(), VecXError> {
     // Acquire a process-wide mutex so concurrent threads don't race creating/writing the same file.

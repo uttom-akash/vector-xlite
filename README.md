@@ -15,7 +15,27 @@ This demonstrates how to use the `vector_xlite` crate to:
 
 ## 🧱 Step-by-Step Breakdown
 
-### 1. Create the Collection
+### 1. Initialize Sqlite Connection Pool
+
+*** Don't forget add this `.connection_customizer(SqliteConnectionCustomizer::new())`
+
+```rust
+// Create an r2d2 Sqlite connection manager in memory
+let manager = SqliteConnectionManager::memory();
+
+// Build a pool and attach a connection customizer that ensures
+// the native extension (and other per-connection setup) run
+let pool = Pool::builder()
+    .max_size(15)
+    .connection_customizer(SqliteConnectionCustomizer::new()) 
+    .build(manager)
+    .unwrap();
+
+// Construct the VectorXLite API object from the pool
+let vlite = VectorXLite::new(pool.clone()).unwrap();
+```
+
+### 2. Create the Collection
 
 ```rust
 let config = CollectionConfigBuilder::default()
@@ -26,7 +46,7 @@ let config = CollectionConfigBuilder::default()
     .build()
     .unwrap();
 
-vs.create_collection(config).unwrap();
+vlite.create_collection(config).unwrap();
 ```
 
 This defines:
@@ -49,7 +69,7 @@ let point = InsertPoint::builder()
     .build()
     .unwrap();
 
-vs.insert(point).unwrap();
+vlite.insert(point).unwrap();
 ```
 
 Use ?1 as a placeholder to bind the vector ID in your SQL statement.
@@ -67,7 +87,7 @@ let search_point = SearchPoint::builder()
     .build()
     .unwrap();
 
-let results = vs.search(search_point).unwrap();
+let results = vlite.search(search_point).unwrap();
 ```
 
 This fetches the top-K most similar vectors from the collection, along with their payloads.
@@ -110,15 +130,23 @@ This example corresponds to the contents of src/main.rs inside the example crate
 use vector_xlite::{
     types::{SearchPoint, CollectionConfigBuilder, InsertPoint, DistanceFunction},
     VectorXLite,
+    customizer::SqliteConnectionCustomizer
 };
-use rusqlite::Connection;
+use r2d2::Pool;
+use r2d2_sqlite::SqliteConnectionManager;
+
 
 fn main() {
     // Step 1: Open SQLite in memory
-    let sqlite_connection = Connection::open_in_memory().unwrap();
+    let manager = SqliteConnectionManager::memory();
 
-    // Step 2: Initialize VectorXLite
-    let vs = VectorXLite::new(sqlite_connection).unwrap();
+    let pool = Pool::builder()
+        .max_size(15)
+        .connection_customizer(SqliteConnectionCustomizer::new())
+        .build(manager)
+        .unwrap();
+
+    let vlite = VectorXLite::new(pool.clone()).unwrap();
 
     // Step 3: Configure and create a collection
     let config = CollectionConfigBuilder::default()
@@ -129,7 +157,7 @@ fn main() {
         .build()
         .unwrap();
 
-    match vs.create_collection(config) {
+    match vlite.create_collection(config) {
         Ok(_) => {
             // Step 4: Prepare vector points with payloads
             let points = vec![
@@ -168,7 +196,7 @@ fn main() {
 
             // Step 5: Insert the data points
             for point in points {
-                vs.insert(point).unwrap();
+                vlite.insert(point).unwrap();
             }
 
             // Step 6: Run a vector search
@@ -180,7 +208,7 @@ fn main() {
                 .build()
                 .unwrap();
 
-            let results = vs.search(search_point).unwrap();
+            let results = vlite.search(search_point).unwrap();
             println!("🔍 Search results: {:?}", results);
         }
         Err(e) => println!("❌ Error creating collection: {:?}", e),
@@ -194,12 +222,14 @@ fn main() {
 
 ```rust
 
-use std::sync::Arc;
 
-use rusqlite::Connection;
+
+
+use r2d2::Pool;
+use r2d2_sqlite::SqliteConnectionManager;
 use vector_xlite::{VectorXLite, types::*};
 
-pub fn run_complex_example(vlite: &VectorXLite, sqlite_conn: Arc<Connection>) {
+pub fn run_complex_example(vlite: &VectorXLite, sqlite_conn_pool: Pool<SqliteConnectionManager>) {
     let create_authors_table = r#"
     create table authors (
             id integer primary key,
@@ -207,6 +237,8 @@ pub fn run_complex_example(vlite: &VectorXLite, sqlite_conn: Arc<Connection>) {
             bio text
         );
         "#;
+
+    let sqlite_conn = sqlite_conn_pool.get().unwrap();
 
     sqlite_conn
         .execute(create_authors_table, [])
@@ -315,6 +347,32 @@ pub fn run_complex_example(vlite: &VectorXLite, sqlite_conn: Arc<Connection>) {
         Err(e) => println!("❌ Error creating advanced story collection: {:?}", e),
     }
 }
+
+---
+---
+use crate::complex_example::run_complex_example;
+use crate::simple_example::run_simple_example;
+use r2d2::Pool;
+use r2d2_sqlite::SqliteConnectionManager;
+use vector_xlite::{VectorXLite, customizer::SqliteConnectionCustomizer};
+
+mod complex_example;
+mod simple_example;
+
+fn main() {
+    let manager = SqliteConnectionManager::memory();
+
+    let pool = Pool::builder()
+        .max_size(15)
+        .connection_customizer(SqliteConnectionCustomizer::new())
+        .build(manager)
+        .unwrap();
+
+    let vlite = VectorXLite::new(pool.clone()).unwrap();
+
+    run_complex_example(&vlite, pool);
+}
+
 
 ```
 
