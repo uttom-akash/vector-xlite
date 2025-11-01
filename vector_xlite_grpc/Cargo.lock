@@ -966,6 +966,7 @@ name = "vector_xlite_grpc"
 version = "0.1.0"
 dependencies = [
  "prost",
+ "rusqlite",
  "tokio",
  "tonic",
  "tonic-prost",

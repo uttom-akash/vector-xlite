@@ -10,6 +10,7 @@ prost = "0.14"
 tonic-prost = "*"
 tokio = { version = "1.0", features = ["macros", "rt-multi-thread"] }
 vector_xlite = "0.2.2"
+rusqlite = { version = "0.37.0", features = ["load_extension" ]}
 
 [build-dependencies]
 tonic-prost-build = "*"

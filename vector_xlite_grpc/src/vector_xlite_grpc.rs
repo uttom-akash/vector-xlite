@@ -1,16 +1,28 @@
 use crate::conversions::*;
 use crate::proto::{self as pb, vector_x_lite_pb_server::VectorXLitePb};
+use std::rc::Rc;
 use std::sync::Arc;
+use tokio::sync::RwLock;
 use tonic::{Request, Response, Status};
 use vector_xlite::VectorXLite;
 use vector_xlite::types::{CollectionConfig, InsertPoint, SearchPoint};
+use rusqlite::Connection;
+
 pub struct VectorXLiteGrpc {
-    inner: Arc<VectorXLite>,
+    inner: Arc<RwLock<VectorXLite>>,
 }
 
 impl VectorXLiteGrpc {
-    pub fn new(inner: Arc<VectorXLite>) -> Self {
-        Self { inner }
+    pub fn new<T>(connection: T) -> Self  
+    where
+        T: Into<Rc<Connection>>,
+    {
+        let inner = VectorXLite::new(connection)
+        .expect("failed to setup vector db.");
+
+        VectorXLiteGrpc {
+            inner: Arc::new(RwLock::new(inner)) 
+        }
     }
 }
 
@@ -22,8 +34,11 @@ impl VectorXLitePb for VectorXLiteGrpc {
     ) -> Result<Response<pb::EmptyPb>, Status> {
         let cfg = req.into_inner();
         let cfg = CollectionConfig::try_from(cfg).map_err(|e| Status::invalid_argument(e))?;
-        self.inner
-            .create_collection(cfg)
+        
+        let inner = self.inner
+            .write().await;
+
+            inner.create_collection(cfg)
             .map_err(|e| Status::internal(e.to_string()))?;
         Ok(Response::new(pb::EmptyPb {}))
     }
@@ -34,7 +49,10 @@ impl VectorXLitePb for VectorXLiteGrpc {
     ) -> Result<Response<pb::EmptyPb>, Status> {
         let ip = req.into_inner();
         let point = InsertPoint::try_from(ip).map_err(|e| Status::invalid_argument(e))?;
-        self.inner
+        let inner = self.inner
+            .write().await;
+
+        inner
             .insert(point)
             .map_err(|e| Status::internal(e.to_string()))?;
         Ok(Response::new(pb::EmptyPb {}))
@@ -46,8 +64,11 @@ impl VectorXLitePb for VectorXLiteGrpc {
     ) -> Result<Response<pb::SearchResponsePb>, Status> {
         let sp = req.into_inner();
         let search_point = SearchPoint::try_from(sp).map_err(|e| Status::invalid_argument(e))?;
-        let results = self
-            .inner
+        
+        let inner = self.inner
+            .read().await;
+
+        let results = inner
             .search(search_point)
             .map_err(|e| Status::internal(e.to_string()))?;
 
