@@ -1,5 +1,5 @@
 use r2d2::CustomizeConnection;
-use rusqlite::{Connection, LoadExtensionGuard};
+use rusqlite::Connection;
 
 use crate::helper::load_sqlite_vector_extension;
 
@@ -19,5 +19,5 @@ impl CustomizeConnection<Connection, rusqlite::Error> for SqliteConnectionCustom
         })
     }
 
-    fn on_release(&self, conn: Connection) {}
+    fn on_release(&self, _conn: Connection) {}
 }

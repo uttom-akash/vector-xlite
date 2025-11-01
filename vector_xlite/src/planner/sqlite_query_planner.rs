@@ -1,4 +1,3 @@
-use std::rc::Rc;
 
 use crate::error::VecXError;
 use crate::helper::*;
@@ -6,7 +5,6 @@ use crate::planner::query_planner::QueryPlanner;
 use crate::types::{CollectionConfig, InsertPoint, QueryPlan, SearchPoint};
 use r2d2::Pool;
 use r2d2_sqlite::SqliteConnectionManager;
-use rusqlite::Connection;
 
 pub(crate) struct SqliteQueryPlanner {
     conn_pool: Pool<SqliteConnectionManager>,
