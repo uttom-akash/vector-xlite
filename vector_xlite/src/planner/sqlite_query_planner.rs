@@ -4,15 +4,17 @@ use crate::error::VecXError;
 use crate::helper::*;
 use crate::planner::query_planner::QueryPlanner;
 use crate::types::{CollectionConfig, InsertPoint, QueryPlan, SearchPoint};
+use r2d2::Pool;
+use r2d2_sqlite::SqliteConnectionManager;
 use rusqlite::Connection;
 
 pub(crate) struct SqliteQueryPlanner {
-    conn: Rc<Connection>,
+    conn_pool: Pool<SqliteConnectionManager>,
 }
 
 impl SqliteQueryPlanner {
-    pub fn new(conn: Rc<Connection>) -> Box<dyn QueryPlanner> {
-        Box::new(SqliteQueryPlanner { conn })
+    pub fn new(pool: Pool<SqliteConnectionManager>) -> Box<dyn QueryPlanner> {
+        Box::new(SqliteQueryPlanner { conn_pool: pool })
     }
 }
 
@@ -33,7 +35,11 @@ impl QueryPlanner for SqliteQueryPlanner {
         );
 
         if let Some(index_path) = collection_config.index_file_path {
-            virtual_table_query = format!("{} , {})", &virtual_table_query[0..virtual_table_query.len()-1], index_path);
+            virtual_table_query = format!(
+                "{} , {})",
+                &virtual_table_query[0..virtual_table_query.len() - 1],
+                index_path
+            );
         }
 
         query_plans.push(QueryPlan {
@@ -108,7 +114,8 @@ impl QueryPlanner for SqliteQueryPlanner {
 
         let payload_query = search_point.payload_search_query.as_ref().unwrap();
         let payload_selection_count = self
-            .conn
+            .conn_pool
+            .get()?
             .query_one(
                 &replace_select_with_count(search_point.payload_search_query.as_ref().unwrap()),
                 (),

@@ -1,21 +1,29 @@
 use crate::{error::VecXError, executor::query_executor::QueryExecutor, types::QueryPlan};
-use rusqlite::{Connection, Result};
-use std::{collections::HashMap, rc::Rc};
+use r2d2::Pool;
+use r2d2_sqlite::SqliteConnectionManager;
+use rusqlite::Result;
+use std::collections::HashMap;
 
 pub(crate) struct SqliteQueryExecutor {
-    conn: Rc<Connection>,
+    conn_pool: Pool<SqliteConnectionManager>,
 }
 
 impl SqliteQueryExecutor {
-    pub fn new(conn: Rc<Connection>) -> Box<dyn QueryExecutor> {
-        Box::new(SqliteQueryExecutor { conn })
+    pub fn new(conn_pool: Pool<SqliteConnectionManager>) -> Box<dyn QueryExecutor> {
+        Box::new(SqliteQueryExecutor {
+            conn_pool: conn_pool,
+        })
     }
 }
 
 impl QueryExecutor for SqliteQueryExecutor {
-    fn execute_create_collection_query(&self, query_plans: Vec<QueryPlan>) -> Result<(), VecXError> {
+    fn execute_create_collection_query(
+        &self,
+        query_plans: Vec<QueryPlan>,
+    ) -> Result<(), VecXError> {
         query_plans.iter().try_for_each(|plan| {
-            self.conn
+            self.conn_pool
+                .get()?
                 .execute(&plan.sql, rusqlite::params_from_iter(&plan.params))?;
             Ok(())
         })
@@ -23,7 +31,8 @@ impl QueryExecutor for SqliteQueryExecutor {
 
     fn execute_insert_query(&self, query_plans: Vec<QueryPlan>) -> rusqlite::Result<(), VecXError> {
         query_plans.iter().try_for_each(|plan| {
-            self.conn
+            self.conn_pool
+                .get()?
                 .execute(&plan.sql, rusqlite::params_from_iter(&plan.params))?;
             Ok(())
         })
@@ -33,7 +42,10 @@ impl QueryExecutor for SqliteQueryExecutor {
         &self,
         query_plan: QueryPlan,
     ) -> rusqlite::Result<Vec<HashMap<String, String>>, VecXError> {
-        let mut stmt = self.conn.prepare(&query_plan.sql)?;
+        let conn = self.conn_pool.get()?;
+
+        let mut stmt = conn.prepare(&query_plan.sql)?;
+
         let rows = stmt
             .query_map(
                 rusqlite::params_from_iter(query_plan.params),
