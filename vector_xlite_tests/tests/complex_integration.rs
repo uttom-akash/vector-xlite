@@ -1,20 +1,28 @@
-use std::rc::Rc;
 
-use rusqlite::Connection;
-use vector_xlite::{VectorXLite, types::*};
+use r2d2::Pool;
+use r2d2_sqlite::SqliteConnectionManager;
+use vector_xlite::{VectorXLite, customizer::SqliteConnectionCustomizer, types::*};
 
 /// Integration tests based on the complex_example scenario.
 /// These tests exercise collection creation, payload inserts and a hybrid
 /// vector + SQL payload-aware search. They avoid asserting on exact
 /// return types — tests check for successful execution and for expected
 /// content in the results.
-fn setup_vlite() -> (VectorXLite, Rc<Connection>) {
-    let conn = Rc::new(Connection::open_in_memory().expect("open in-memory sqlite"));
-    let vlite = VectorXLite::new(Rc::clone(&conn)).expect("create VectorXLite");
-    (vlite, conn)
+fn setup_vlite() -> (VectorXLite, Pool<SqliteConnectionManager>) {
+    let manager = SqliteConnectionManager::memory();
+    let pool = Pool::builder()
+        .max_size(15)
+        .connection_customizer(SqliteConnectionCustomizer::new())
+        .build(manager)
+        .expect("open in-memory sqlite");
+    
+    let vlite = VectorXLite::new(pool.clone())
+    .expect("create VectorXLite");
+
+    (vlite, pool)
 }
 
-fn insert_authors(conn: &Connection) {
+fn insert_authors(pool: Pool<SqliteConnectionManager>) {
     let create_authors_table = r#"
     create table authors (
         id integer primary key,
@@ -22,6 +30,9 @@ fn insert_authors(conn: &Connection) {
         bio text
     );
     "#;
+
+    let conn = pool.get().unwrap();
+
 
     conn.execute(create_authors_table, [])
         .expect("create authors table");
@@ -102,8 +113,9 @@ fn prepare_and_insert_stories(vlite: &VectorXLite) {
 
 #[test]
 fn test_advanced_story_search_filtered() {
-    let (vlite, conn) = setup_vlite();
-    insert_authors(&conn);
+    let (vlite, pool) = setup_vlite();
+    
+    insert_authors(pool.clone());
     prepare_and_insert_stories(&vlite);
 
     let search_point = SearchPoint::builder()
@@ -143,8 +155,8 @@ fn test_advanced_story_search_filtered() {
 
 #[test]
 fn test_advanced_story_search_broad() {
-    let (vlite, conn) = setup_vlite();
-    insert_authors(&conn);
+    let (vlite, pool) = setup_vlite();
+    insert_authors(pool);
     prepare_and_insert_stories(&vlite);
 
     let search_point = SearchPoint::builder()
