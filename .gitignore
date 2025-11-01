@@ -2,3 +2,4 @@ example/target
 sqlite-extionsion
 vector_xlite/target
 vector_xlite_tests/target
+vector_xlite_grpc/target
