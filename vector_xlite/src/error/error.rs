@@ -43,3 +43,9 @@ impl From<io::Error> for VecXError {
         VecXError::IoError(e.to_string())
     }
 }
+
+impl From<r2d2::Error> for VecXError {
+    fn from(e: r2d2::Error) -> Self {
+        VecXError::Other(e.to_string())
+    }
+}

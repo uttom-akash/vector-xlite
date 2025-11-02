@@ -1,11 +1,11 @@
 
 
-use std::rc::Rc;
 
-use rusqlite::Connection;
+use r2d2::Pool;
+use r2d2_sqlite::SqliteConnectionManager;
 use vector_xlite::{VectorXLite, types::*};
 
-pub fn run_complex_example(vlite: &VectorXLite, sqlite_conn: Rc<Connection>) {
+pub fn run_complex_example(vlite: &VectorXLite, sqlite_conn_pool: Pool<SqliteConnectionManager>) {
     let create_authors_table = r#"
     create table authors (
             id integer primary key,
@@ -13,6 +13,8 @@ pub fn run_complex_example(vlite: &VectorXLite, sqlite_conn: Rc<Connection>) {
             bio text
         );
         "#;
+
+    let sqlite_conn = sqlite_conn_pool.get().unwrap();
 
     sqlite_conn
         .execute(create_authors_table, [])
