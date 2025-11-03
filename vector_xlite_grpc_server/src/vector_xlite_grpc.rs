@@ -1,28 +1,20 @@
 use crate::conversions::*;
 use crate::proto::{self as pb, vector_x_lite_pb_server::VectorXLitePb};
-use std::rc::Rc;
-use std::sync::Arc;
-use tokio::sync::RwLock;
+use r2d2::Pool;
+use r2d2_sqlite::SqliteConnectionManager;
 use tonic::{Request, Response, Status};
 use vector_xlite::VectorXLite;
 use vector_xlite::types::{CollectionConfig, InsertPoint, SearchPoint};
-use rusqlite::Connection;
 
 pub struct VectorXLiteGrpc {
-    inner: Arc<RwLock<VectorXLite>>,
+    vxlite: VectorXLite,
 }
 
 impl VectorXLiteGrpc {
-    pub fn new<T>(connection: T) -> Self  
-    where
-        T: Into<Rc<Connection>>,
-    {
-        let inner = VectorXLite::new(connection)
-        .expect("failed to setup vector db.");
+    pub fn new(connection_pool: Pool<SqliteConnectionManager>) -> Self {
+        let inner = VectorXLite::new(connection_pool).expect("failed to setup vector db.");
 
-        VectorXLiteGrpc {
-            inner: Arc::new(RwLock::new(inner)) 
-        }
+        VectorXLiteGrpc { vxlite: inner }
     }
 }
 
@@ -34,11 +26,9 @@ impl VectorXLitePb for VectorXLiteGrpc {
     ) -> Result<Response<pb::EmptyPb>, Status> {
         let cfg = req.into_inner();
         let cfg = CollectionConfig::try_from(cfg).map_err(|e| Status::invalid_argument(e))?;
-        
-        let inner = self.inner
-            .write().await;
 
-            inner.create_collection(cfg)
+        self.vxlite
+            .create_collection(cfg)
             .map_err(|e| Status::internal(e.to_string()))?;
         Ok(Response::new(pb::EmptyPb {}))
     }
@@ -49,10 +39,8 @@ impl VectorXLitePb for VectorXLiteGrpc {
     ) -> Result<Response<pb::EmptyPb>, Status> {
         let ip = req.into_inner();
         let point = InsertPoint::try_from(ip).map_err(|e| Status::invalid_argument(e))?;
-        let inner = self.inner
-            .write().await;
 
-        inner
+        self.vxlite
             .insert(point)
             .map_err(|e| Status::internal(e.to_string()))?;
         Ok(Response::new(pb::EmptyPb {}))
@@ -64,11 +52,9 @@ impl VectorXLitePb for VectorXLiteGrpc {
     ) -> Result<Response<pb::SearchResponsePb>, Status> {
         let sp = req.into_inner();
         let search_point = SearchPoint::try_from(sp).map_err(|e| Status::invalid_argument(e))?;
-        
-        let inner = self.inner
-            .read().await;
 
-        let results = inner
+        let results = self
+            .vxlite
             .search(search_point)
             .map_err(|e| Status::internal(e.to_string()))?;
 
