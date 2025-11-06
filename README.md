@@ -1,4 +1,7 @@
-# <img src="logo.png" alt="vxlite logo" width="30"/> vector-xlite
+<h1 align="center">
+  <img src="logo.png" alt="vxlite logo" width="30" style="border-radius:50"/>
+  vector-xlite
+</h1>
 
 **VectorXLite** — A fast, lightweight vector search with payload support and SQL-based filtering.
 
