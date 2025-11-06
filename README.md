@@ -1,4 +1,4 @@
-# 🧠 vector-xlite
+# <img src="logo.png" alt="vxlite logo" width="30"/> vector-xlite
 
 **VectorXLite** — A fast, lightweight vector search with payload support and SQL-based filtering.
 
