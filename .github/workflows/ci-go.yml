@@ -20,11 +20,18 @@ jobs:
       - name: Install Protobuf Compiler
         run: sudo apt-get update && sudo apt-get install -y protobuf-compiler
 
-      - name: Install Dependancies
-        run: go mod tidy
+      - name: Install Vector XLite Go Client Dependancies
+        run: go mod tidy 
+        working-directory: ./vector_xlite_go_client
       
       - name: Build Vector XLite Go Client
-        run: go build -v -o vxlite ./vector_xlite_go_client
+        run: go build -v -o vxlite 
+        working-directory: ./vector_xlite_go_client
       
+      - name: Install Go Examples Dependancies
+        run: go mod tidy
+        working-directory: ./console_exmples/go_examples
+
       - name: Build Go Examples
-        run: go build -v -o vxlite-example ./console_exmples/go_examples
+        run: go build -v -o vxlite-example
+        working-directory: ./console_exmples/go_examples
