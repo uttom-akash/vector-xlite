@@ -1109,8 +1109,6 @@ checksum = "accd4ea62f7bb7a82fe23066fb0957d48ef677f6eeb8215f372f52e48bb32426"
 [[package]]
 name = "vector_xlite"
 version = "1.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d8b76d1c5f250bdd8dcd696bc42da0e45c8655827244acda581d7e7924ef5989"
 dependencies = [
  "once_cell",
  "r2d2",
