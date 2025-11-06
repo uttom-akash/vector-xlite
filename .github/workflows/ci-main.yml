@@ -13,3 +13,6 @@ on :
 jobs:
   build_rust_projects:
     uses: ./.github/workflows/ci-rust.yml
+  
+  build_go_proejects:
+    uses: ./.github/workflows/ci-go.yml
