@@ -1,5 +1,5 @@
 <h1 align="center">
-  <img src="logo.png" alt="vxlite logo" width="30" style="border-radius:50"/>
+  <img src="https://i.imgur.com/S3PJvXm.png" alt="vxlite logo" width="30" style="border-radius:50"/>
   vector-xlite
 </h1>
 
