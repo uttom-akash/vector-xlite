@@ -25,7 +25,7 @@ jobs:
         working-directory: ./vector_xlite_go_client
       
       - name: Build Vector XLite Go Client
-        run: go build -v -o vxlite 
+        run: go build -v -o vxlite_client_go client/client.go
         working-directory: ./vector_xlite_go_client
       
       - name: Install Go Examples Dependancies
@@ -33,5 +33,5 @@ jobs:
         working-directory: ./console_exmples/go_examples
 
       - name: Build Go Examples
-        run: go build -v -o vxlite-example
+        run: go build -v -o vxlite-example 
         working-directory: ./console_exmples/go_examples
