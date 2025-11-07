@@ -15,7 +15,7 @@ func main() {
 	println("running...")
 
 	ctx := context.Background()
-	client, err := client.NewClient(ctx, "[::1]:50051", 5*time.Second)
+	client, err := client.NewClient(ctx, "0.0.0.0:50051", 5*time.Second)
 
 	if err != nil {
 		log.Fatalf("failed to connect: %v", err)
