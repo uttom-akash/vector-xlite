@@ -22,7 +22,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .unwrap();
 
     let addr = env::var("GRPC_ADDR")
-        .unwrap_or(String::from("[::1]:50051"))
+        .unwrap_or(String::from("0.0.0.0:50051"))
         .parse()?;
 
     let vxlite = VectorXLiteGrpc::new(pool);
