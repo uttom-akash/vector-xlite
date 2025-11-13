@@ -34,6 +34,14 @@ jobs:
         run : cargo build --release
         working-directory: ./console_exmples/rust_examples
 
+      # Publish only on push to main
+      - name: Publish Vector XLite Crate
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+        working-directory: ./vector_xlite
+        run: cargo publish --token $CARGO_REGISTRY_TOKEN
+
       - name: Install Protobuf Compiler
         run: sudo apt-get update && sudo apt-get install -y protobuf-compiler
 
