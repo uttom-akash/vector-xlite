@@ -41,7 +41,12 @@ jobs:
         env:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
         working-directory: ./vector_xlite
-        run: cargo publish --token $CARGO_REGISTRY_TOKEN
+        run: |
+          echo "secrets"
+          echo ${{ secrets.CARGO_REGISTRY_TOKEN }}
+          echo "env variables"
+          echo $CARGO_REGISTRY_TOKEN
+          cargo publish --token $CARGO_REGISTRY_TOKEN
 
       - name: Install Protobuf Compiler
         run: sudo apt-get update && sudo apt-get install -y protobuf-compiler
