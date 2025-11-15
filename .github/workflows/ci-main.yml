@@ -13,6 +13,14 @@ on :
 jobs:
   build_rust_projects:
     uses: ./.github/workflows/ci-rust.yml
-  
+
   build_go_proejects:
     uses: ./.github/workflows/ci-go.yml
+
+  publish_rust_crates:
+    needs: build_rust_projects
+    uses: ./.github/workflows/ci-crate-publish.yml
+    with:
+      should_publish: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    secrets: inherit
+    

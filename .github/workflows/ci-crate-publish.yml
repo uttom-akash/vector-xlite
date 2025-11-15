@@ -1,0 +1,61 @@
+name: Publish Crates
+
+on:
+  workflow_call:
+    secrets:
+      CARGO_REGISTRY_TOKEN:
+        required: true
+    inputs:
+      should_publish:
+        required: true
+        type: boolean
+
+jobs:
+  publish_crates:
+    name: Publish Crates
+    runs-on: ubuntu-latest
+    if: ${{ inputs.should_publish }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Setup Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          profile: minimal
+          override: true
+      
+      - name: Read Local vector_xlite Version
+        id: local_vector_xlite_metadata
+        working-directory: ./vector_xlite
+        run: |
+          LOCAL_VERSION=$(grep '^version' Cargo.toml | head -1 | sed 's/version = "//;s/"//')
+          echo "version=$LOCAL_VERSION" | tee -a $GITHUB_OUTPUT
+
+      - name: Fetch Remote vector_xlite version
+        id: remote_vector_xlite_metadata
+        run: |
+          LATEST_VERSION=$(curl -H "User-Agent: github-vxlite-wf" \
+          -s https://crates.io/api/v1/crates/vector_xlite \
+            | jq -r '.crate.max_stable_version')
+
+          echo "version=$LATEST_VERSION" | tee -a $GITHUB_OUTPUT
+
+      - name: Publish Vector xLite
+        run: |
+          LOCAL=${{ steps.local_vector_xlite_metadata.outputs.version }}
+          REMOTE=${{ steps.remote_vector_xlite_metadata.outputs.version }}
+  
+          LATEST=$(printf '%s\n%s' "$REMOTE" "$LOCAL" | sort -V | tail -n1)
+
+          if [ "$LATEST" = "$LOCAL" ] && [ "$LOCAL" != "$REMOTE" ]; then
+            cargo publish --token ${{ secrets.CARGO_REGISTRY_TOKEN }}
+            echo "Published vector_xlite version: $LATEST successfully"
+          else
+            echo "vector_xlite version: $LATEST already exists"
+          fi
+        working-directory: ./vector_xlite
+        
+
