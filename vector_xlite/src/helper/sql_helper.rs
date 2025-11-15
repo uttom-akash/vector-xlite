@@ -1,5 +1,9 @@
 use once_cell::sync::Lazy;
+use r2d2::Pool;
+use r2d2_sqlite::SqliteConnectionManager;
 use regex::Regex;
+
+use crate::error::VecXError;
 
 /// Compile regexes once for performance and to avoid unwraps at runtime.
 static RE_WITH_COLS: Lazy<Regex> = Lazy::new(|| {
@@ -82,4 +86,99 @@ pub fn parse_collection_name(sql_opt: Option<&String>) -> Option<String> {
             .and_then(|caps| caps.get(1))
             .map(|m| m.as_str().to_string())
     })
+}
+
+#[derive(Debug)]
+struct ColumnInfo {
+    name: String,
+    col_type: Option<String>,
+    not_null: bool,
+    default_value: Option<String>,
+    is_pk: bool,
+}
+
+/// Create an INSERT query that includes default values for NOT NULL columns.
+///
+/// Rules:
+/// - If column has dflt_value → use it.
+/// - If NOT NULL and no dflt_value → use a synthetic safe default based on type.
+/// - Else → insert NULL.
+///
+/// Example output:
+///   INSERT INTO story(title, rating, created_at)
+///   VALUES(?1, COALESCE(?2, 0.0), datetime('now'));
+pub fn generate_insert_with_defaults(
+    pool: Pool<SqliteConnectionManager>,
+    table: &str,
+) -> rusqlite::Result<String, VecXError> {
+    let conn = pool.get()?;
+    let mut stmt = conn.prepare(&format!("PRAGMA table_info({table})"))?;
+    let rows = stmt.query_map([], |row| {
+        let name: String = row.get(1)?;
+        let col_type: Option<String> = row.get(2)?;
+        let not_null: i32 = row.get(3)?;
+        let default_value: Option<String> = row.get(4)?;
+        let is_pk: i32 = row.get(5)?;
+
+        Ok(ColumnInfo {
+            name,
+            col_type,
+            not_null: not_null != 0,
+            default_value,
+            is_pk: is_pk != 0,
+        })
+    })?;
+
+    let mut columns = Vec::<String>::new();
+    let mut values = Vec::<String>::new();
+    let mut placeholder_index = 1;
+
+    for col in rows {
+        let col = col?;
+        columns.push(col.name.clone());
+
+        // Case 1: Column has DEFAULT value in schema
+        if let Some(def) = col.default_value.clone() {
+            values.push(def); // SQLite default expressions are already valid SQL
+            continue;
+        }
+
+        // Case 2: NOT NULL but no default → choose safe type-based default
+        if col.not_null {
+            let fallback = match col
+                .col_type
+                .as_deref()
+                .unwrap_or("")
+                .to_uppercase()
+                .as_str()
+            {
+                "TEXT" => "''",
+                "INTEGER" => "0",
+                "REAL" => "0.0",
+                "BLOB" => "x''",
+                _ => "''", // generic fallback
+            };
+            values.push(fallback.to_string());
+            placeholder_index += 1;
+            continue;
+        }
+
+        // Case 3: Column is pk
+        if col.is_pk {
+            values.push(format!("?{}", placeholder_index));
+            placeholder_index += 1;
+            continue;
+        }
+
+        // Case 4: Column allows NULL → use placeholder wrapped with NULL default
+        values.push(format!("NULL"));
+    }
+
+    let query = format!(
+        "INSERT INTO {table} ({}) VALUES ({})",
+        columns.join(", "),
+        values.join(", ")
+    );
+
+    Ok(query)
 }
