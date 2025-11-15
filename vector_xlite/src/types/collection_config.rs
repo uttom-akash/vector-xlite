@@ -1,4 +1,4 @@
-use crate::{helper::sql_helper::*, types::enums::DistanceFunction};
+use crate:: types::enums::DistanceFunction;
 
 pub struct CollectionConfig {
     pub collection_name: String,
@@ -69,19 +69,22 @@ impl CollectionConfigBuilder {
         self
     }
 
-    pub fn build(self) -> Result<CollectionConfig, &'static str> {
-        if self.name.is_none() && self.payload_table_schema.is_none() {
-            return Err("Either collection_name or payload_table_schema must be provided.".into());
+    pub fn build(mut self) -> Result<CollectionConfig, &'static str> {
+        if self.name.is_none() {
+            return Err("Collection_name must be provided.".into());
+        }
+
+        if self.payload_table_schema.is_none(){
+            self.payload_table_schema = Some(format!("create table {no_payload_collection} ( rowid integer primary key );", no_payload_collection= self.name.as_ref().unwrap()));
         }
 
         let default = CollectionConfig::default();
-
+        
         Ok(CollectionConfig {
-            collection_name: parse_collection_name(self.payload_table_schema.as_ref())
-                .unwrap_or(self.name.unwrap_or(default.collection_name)),
+            collection_name: self.name.unwrap(),
             dimension: self.dimension.unwrap_or(default.dimension),
             distance: self.distance.unwrap_or(default.distance),
-            payload_table_schema: self.payload_table_schema.or(default.payload_table_schema),
+            payload_table_schema: self.payload_table_schema,
             index_file_path: self.index_file_path.or(default.index_file_path),
             max_elements: self.max_elements.unwrap_or(default.max_elements),
         })

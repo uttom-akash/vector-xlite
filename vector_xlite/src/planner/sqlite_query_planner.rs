@@ -75,16 +75,20 @@ impl QueryPlanner for SqliteQueryPlanner {
             post_process: None,
         });
 
-        if create_point.payload_insert_query.is_some() {
-            query_plans.push(QueryPlan {
-                sql: inject_rowid(
-                    create_point.payload_insert_query.as_ref().unwrap(),
-                    create_point.id.unwrap(),
-                ),
-                params: vec![],
-                post_process: None,
-            });
+        let mut payload_insert_query = create_point.payload_insert_query;
+        if payload_insert_query.is_none(){
+            payload_insert_query = Some(generate_insert_with_defaults(self.conn_pool.clone(), create_point.collection_name.as_str()).unwrap());
+            println!("default insert query: {}", payload_insert_query.as_ref().unwrap());
         }
+
+        query_plans.push(QueryPlan {
+            sql: inject_rowid(
+                payload_insert_query.as_ref().unwrap(),
+                create_point.id.unwrap(),
+            ),
+            params: vec![],
+            post_process: None,
+        });
 
         Ok(query_plans)
     }

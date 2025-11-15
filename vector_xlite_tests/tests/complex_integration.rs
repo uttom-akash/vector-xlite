@@ -1,4 +1,3 @@
-
 use r2d2::Pool;
 use r2d2_sqlite::SqliteConnectionManager;
 use vector_xlite::{VectorXLite, customizer::SqliteConnectionCustomizer, types::*};
@@ -15,9 +14,8 @@ fn setup_vlite() -> (VectorXLite, Pool<SqliteConnectionManager>) {
         .connection_customizer(SqliteConnectionCustomizer::new())
         .build(manager)
         .expect("open in-memory sqlite");
-    
-    let vlite = VectorXLite::new(pool.clone())
-    .expect("create VectorXLite");
+
+    let vlite = VectorXLite::new(pool.clone()).expect("create VectorXLite");
 
     (vlite, pool)
 }
@@ -32,7 +30,6 @@ fn insert_authors(pool: Pool<SqliteConnectionManager>) {
     "#;
 
     let conn = pool.get().unwrap();
-
 
     conn.execute(create_authors_table, [])
         .expect("create authors table");
@@ -114,7 +111,7 @@ fn prepare_and_insert_stories(vlite: &VectorXLite) {
 #[test]
 fn test_advanced_story_search_filtered() {
     let (vlite, pool) = setup_vlite();
-    
+
     insert_authors(pool.clone());
     prepare_and_insert_stories(&vlite);
 
@@ -176,4 +173,145 @@ fn test_advanced_story_search_broad() {
         "expected all inserted rowids in results, got: {}",
         results_str
     );
+}
+
+#[test]
+fn test_vector_without_payload() {
+    let (vlite, _pool) = setup_vlite();
+
+    // Create a collection with payload schema
+    let collection_config = CollectionConfigBuilder::default()
+        .collection_name("no_payload_collection")
+        .distance(DistanceFunction::Cosine)
+        .vector_dimension(4)
+        .payload_table_schema(
+            r#"
+            create table no_payload_collection (
+                rowid integer primary key,
+                title text not null,
+                rating real
+            );
+            "#,
+        )
+        .build()
+        .unwrap();
+
+    vlite
+        .create_collection(collection_config)
+        .expect("create collection");
+
+    // Insert a vector WITHOUT any payload
+    let point_no_payload = InsertPoint::builder()
+        .collection_name("no_payload_collection")
+        .id(201)
+        .vector(vec![0.1, 0.2, 0.3, 0.4])
+        .build()
+        .unwrap();
+
+    vlite
+        .insert(point_no_payload)
+        .expect("insert point without payload");
+
+    // Insert a vector WITH payload for comparison
+    let point_with_payload = InsertPoint::builder()
+        .collection_name("no_payload_collection")
+        .id(202)
+        .vector(vec![0.5, 0.6, 0.7, 0.8])
+        .payload_insert_query(
+            r#"
+            insert into no_payload_collection(rowid, title, rating)
+            values (?1, 'Has Payload', 5.0)
+            "#,
+        )
+        .build()
+        .unwrap();
+
+    vlite
+        .insert(point_with_payload)
+        .expect("insert point with payload");
+
+    // Perform a search requesting payload fields but NO filters
+    let search_point = SearchPoint::builder()
+        .collection_name("no_payload_collection")
+        .vector(vec![0.1, 0.2, 0.3, 0.4])
+        .top_k(10)
+        .payload_search_query("select * from no_payload_collection")
+        .build()
+        .unwrap();
+
+    let results = vlite.search(search_point).expect("search executed");
+
+    // Verify that the point without payload is still returned
+    let ids: Vec<_> = results.iter().map(|r| r.get("rowid").unwrap()).collect();
+    assert!(
+        ids.iter().any(|e| e == &"201"),
+        "vector without payload should be returned"
+    );
+    assert_eq!(results.len(), 2);
+}
+
+#[test]
+fn test_without_payload_table() {
+    let (vlite, _pool) = setup_vlite();
+
+    // Create a collection with payload schema
+    let collection_config = CollectionConfigBuilder::default()
+        .collection_name("no_payload_collection")
+        .distance(DistanceFunction::Cosine)
+        .vector_dimension(4)
+        .build()
+        .unwrap();
+
+    vlite
+        .create_collection(collection_config)
+        .expect("create collection");
+
+    // Insert a vector WITHOUT any payload
+    let point_no_payload = InsertPoint::builder()
+        .collection_name("no_payload_collection")
+        .id(201)
+        .vector(vec![0.1, 0.2, 0.3, 0.4])
+        .build()
+        .unwrap();
+
+    vlite
+        .insert(point_no_payload)
+        .expect("insert point without payload");
+
+    // Insert a vector WITH payload for comparison
+    let point_with_payload = InsertPoint::builder()
+        .collection_name("no_payload_collection")
+        .id(202)
+        .vector(vec![0.5, 0.6, 0.7, 0.8])
+        .payload_insert_query(
+            r#"
+            insert into no_payload_collection(rowid)
+            values (?1)
+            "#,
+        )
+        .build()
+        .unwrap();
+
+    vlite
+        .insert(point_with_payload)
+        .expect("insert point with payload");
+
+    // Perform a search requesting payload fields but NO filters
+    let search_point = SearchPoint::builder()
+        .collection_name("no_payload_collection")
+        .vector(vec![0.1, 0.2, 0.3, 0.4])
+        .top_k(10)
+        .payload_search_query("select * from no_payload_collection")
+        .build()
+        .unwrap();
+
+    let results = vlite.search(search_point).expect("search executed");
+
+    // Verify that the point without payload is still returned
+    let ids: Vec<_> = results.iter().map(|r| r.get("rowid").unwrap()).collect();
+    assert!(
+        ids.iter().any(|e| e == &"201"),
+        "vector without payload should be returned"
+    );
+    assert_eq!(results.len(), 2);
 }
