@@ -18,6 +18,9 @@ jobs:
     uses: ./.github/workflows/ci-go.yml
 
   publish_rust_crates:
-    uses: ./.github/workflows/ci-crate-publish.yml
     needs: build_rust_projects
+    uses: ./.github/workflows/ci-crate-publish.yml
+    with:
+      should_publish: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     secrets: inherit
+    

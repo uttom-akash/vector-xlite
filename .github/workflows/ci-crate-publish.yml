@@ -5,11 +5,16 @@ on:
     secrets:
       CARGO_REGISTRY_TOKEN:
         required: true
+    inputs:
+      should_publish:
+        required: true
+        type: boolean
 
 jobs:
   publish_crates:
     name: Publish Crates
     runs-on: ubuntu-latest
+    if: ${{ inputs.should_publish }}
 
     steps:
       - name: Checkout repository
@@ -39,9 +44,6 @@ jobs:
           echo "version=$LATEST_VERSION" | tee -a $GITHUB_OUTPUT
 
       - name: Publish Vector xLite
-        # if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        # if: github.ref == 'refs/heads/main' || github.event_name == 'pull_request'
-        # if: ${{ steps.local_vector_xlite_metadata.outputs.version }} > ${{ steps.remote_vector_xlite_metadata.outputs.version }}
         run: |
           LOCAL=${{ steps.local_vector_xlite_metadata.outputs.version }}
           REMOTE=${{ steps.remote_vector_xlite_metadata.outputs.version }}
@@ -49,11 +51,11 @@ jobs:
           LATEST=$(printf '%s\n%s' "$REMOTE" "$LOCAL" | sort -V | tail -n1)
 
           if [ "$LATEST" = "$LOCAL" ] && [ "$LOCAL" != "$REMOTE" ]; then
-            echo "publish=true"
+            cargo publish --token ${{ secrets.CARGO_REGISTRY_TOKEN }}
+            echo "Published vector_xlite version: $LATEST successfully"
           else
-            echo "publish=false"
+            echo "vector_xlite version: $LATEST already exists"
           fi
-        # cargo publish --token ${{ secrets.CARGO_REGISTRY_TOKEN }}
         working-directory: ./vector_xlite
         
 
