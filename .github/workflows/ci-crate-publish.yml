@@ -12,6 +12,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Setup Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          profile: minimal
+          override: true
+          
       - name: Publish Vector xLite
         # if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         # if: github.ref == 'refs/heads/main' || github.event_name == 'pull_request'
