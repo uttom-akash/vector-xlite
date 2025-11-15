@@ -13,7 +13,11 @@ on :
 jobs:
   build_rust_projects:
     uses: ./.github/workflows/ci-rust.yml
-    secrets: inherit
-  
+
   build_go_proejects:
     uses: ./.github/workflows/ci-go.yml
+
+  publish_rust_crates:
+    uses: ./.github/workflows/ci-crate-publish.yml
+    needs: build_rust_projects
+    secrets: inherit
