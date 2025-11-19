@@ -1,4 +1,3 @@
-use crate::helper::sql_helper::*;
 
 #[derive(Debug, Clone)]
 pub struct InsertPoint {
@@ -46,9 +45,9 @@ impl InsertPointBuilder {
     /// ✅ Build with validation:
     /// Ensures that either `collection_name` or `payload_insert_query` is provided.
     pub fn build(self) -> Result<InsertPoint, String> {
-        // Validate collection_name / payload_insert_query rule
-        if self.collection_name.is_none() && self.payload_insert_query.is_none() {
-            return Err("Either collection_name or payload_insert_query must be provided.".into());
+        // Validate collection_name
+        if self.collection_name.is_none() {
+            return Err("Collection_name must be provided.".into());
         }
 
         // Validate vector presence
@@ -57,8 +56,7 @@ impl InsertPointBuilder {
             .ok_or_else(|| "Vector must be provided.".to_string())?;
 
         Ok(InsertPoint {
-            collection_name: parse_collection_name(self.payload_insert_query.as_ref())
-                .unwrap_or(self.collection_name.unwrap_or("".to_string())),
+            collection_name: self.collection_name.unwrap(),
             id: self.id,
             vector,
             payload_insert_query: self.payload_insert_query,

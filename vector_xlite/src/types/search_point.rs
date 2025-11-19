@@ -1,4 +1,3 @@
-use crate::helper::sql_helper::*;
 
 #[derive(Debug, Clone)]
 pub struct SearchPoint {
@@ -48,8 +47,8 @@ impl SearchPointBuilder {
     /// - top_k must be positive
     /// - Either collection_name or payload_search_query must be provided
     pub fn build(self) -> Result<SearchPoint, String> {
-        if self.collection_name.is_none() && self.payload_search_query.is_none() {
-            return Err("Either collection_name or payload_search_query must be provided.".into());
+        if self.collection_name.is_none() {
+            return Err("Collection_name must be provided.".into());
         }
 
         let vector = self
@@ -62,8 +61,7 @@ impl SearchPointBuilder {
         }
 
         Ok(SearchPoint {
-            collection_name: parse_collection_name(self.payload_search_query.as_ref())
-                .unwrap_or(self.collection_name.unwrap_or("".to_string())),
+            collection_name: self.collection_name.unwrap(),
             vector,
             top_k,
             payload_search_query: self.payload_search_query,
