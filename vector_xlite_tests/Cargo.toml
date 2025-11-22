@@ -8,3 +8,17 @@ vector_xlite = {path = "../vector_xlite"}
 rusqlite = { version = "0.37.0", features = ["load_extension" ]}
 r2d2 = "0.8.10"
 r2d2_sqlite = { version = "0.31.0"}
+
+[dev-dependencies]
+# Property-based testing (uncomment to use)
+# proptest = "1.4"
+
+# Snapshot testing (uncomment to use)
+# insta = "1.34"
+
+# Benchmarking (uncomment to use)
+# criterion = { version = "0.5", features = ["html_reports"] }
+
+# [[bench]]
+# name = "vector_benchmarks"
+# harness = false
