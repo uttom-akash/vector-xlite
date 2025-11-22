@@ -78,7 +78,6 @@ impl QueryPlanner for SqliteQueryPlanner {
         let mut payload_insert_query = create_point.payload_insert_query;
         if payload_insert_query.is_none(){
             payload_insert_query = Some(generate_insert_with_defaults(self.conn_pool.clone(), create_point.collection_name.as_str()).unwrap());
-            println!("default insert query: {}", payload_insert_query.as_ref().unwrap());
         }
 
         query_plans.push(QueryPlan {
