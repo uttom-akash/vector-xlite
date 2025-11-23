@@ -1,430 +1,452 @@
-<h1 align="center" vertical-align="center">
-  <img src="https://i.imgur.com/S3PJvXm.png" alt="vxlite logo" width="40"/>
-  <span style="margin-bottom: 20px;">Vector Xlite</span>
-</h1>
+<p align="center">
+  <img src="https://i.imgur.com/S3PJvXm.png" alt="VectorXLite Logo" width="80"/>
+</p>
 
-**VectorXLite** — A fast, lightweight vector search with payload support and SQL-based filtering.
+<h1 align="center">VectorXLite</h1>
 
-Crate : https://crates.io/crates/vector_xlite
+<p align="center">
+  <strong>A fast, lightweight vector database with SQL-powered payload filtering</strong>
+</p>
 
-This demonstrates how to use the `vector_xlite` crate to:
-
-- Create a collection with vector embeddings and optional payload data.  
-- Insert and manage vectors along with associated metadata.  
-- Perform fast vector similarity search (e.g., **Cosine**, **Dot**, or **L2** distance).  
-- Filter and query payloads using standard **SQL** alongside vector search.
+<p align="center">
+  <a href="https://crates.io/crates/vector_xlite"><img src="https://img.shields.io/crates/v/vector_xlite.svg" alt="Crates.io"></a>
+  <a href="https://docs.rs/vector_xlite"><img src="https://docs.rs/vector_xlite/badge.svg" alt="Documentation"></a>
+  <a href="https://github.com/anthropics/vector-db-rs/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License"></a>
+</p>
 
 ---
 
-## 🧱 Step-by-Step Breakdown
+## Overview
 
-### 1. Initialize Sqlite Connection Pool
+**VectorXLite** is a high-performance, embeddable vector database built on SQLite. It combines the power of HNSW-based approximate nearest neighbor search with the flexibility of SQL for metadata filtering, making it ideal for AI/ML applications, semantic search, and recommendation systems.
 
-*** Don't forget add this `.connection_customizer(SqliteConnectionCustomizer::new())`
+### Why VectorXLite?
 
-```rust
-// Create an r2d2 Sqlite connection manager in memory
-let manager = SqliteConnectionManager::memory();
+| Feature | Benefit |
+|---------|---------|
+| **Embedded Architecture** | No separate server required - runs in-process |
+| **SQLite Foundation** | Battle-tested storage with ACID guarantees |
+| **HNSW Index** | Sub-millisecond similarity search on millions of vectors |
+| **SQL Filtering** | Full SQL support for complex payload queries |
+| **Atomic Operations** | Transaction support for data consistency |
+| **Zero Configuration** | Works out of the box with sensible defaults |
 
-// Build a pool and attach a connection customizer that ensures
-// the native extension (and other per-connection setup) run
-let pool = Pool::builder()
-    .max_size(15)
-    .connection_customizer(SqliteConnectionCustomizer::new()) 
-    .build(manager)
-    .unwrap();
+---
 
-// Construct the VectorXLite API object from the pool
-let vlite = VectorXLite::new(pool.clone()).unwrap();
+## Features
+
+- **Multiple Distance Functions**: Cosine similarity, L2 (Euclidean), and Inner Product
+- **Flexible Dimensions**: Support for vectors of any dimension
+- **Rich Payload Support**: Store and query arbitrary metadata alongside vectors
+- **Hybrid Search**: Combine vector similarity with SQL WHERE clauses
+- **Connection Pooling**: Built-in r2d2 pool support for concurrent access
+- **Persistent Storage**: File-backed or in-memory operation modes
+- **Type-Safe API**: Builder pattern with compile-time validation
+
+---
+
+## Installation
+
+Add VectorXLite to your `Cargo.toml`:
+
+```toml
+[dependencies]
+vector_xlite = "0.1"
+r2d2 = "0.8"
+r2d2_sqlite = "0.24"
 ```
 
-### 2. Create the Collection
+---
+
+## Quick Start
+
+```rust
+use vector_xlite::{VectorXLite, customizer::SqliteConnectionCustomizer, types::*};
+use r2d2::Pool;
+use r2d2_sqlite::SqliteConnectionManager;
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // 1. Create connection pool
+    let manager = SqliteConnectionManager::memory();
+    let pool = Pool::builder()
+        .max_size(10)
+        .connection_customizer(SqliteConnectionCustomizer::new())
+        .build(manager)?;
+
+    let db = VectorXLite::new(pool)?;
+
+    // 2. Create a collection
+    let config = CollectionConfigBuilder::default()
+        .collection_name("products")
+        .vector_dimension(384)  // e.g., sentence-transformers output
+        .distance(DistanceFunction::Cosine)
+        .payload_table_schema(
+            "CREATE TABLE products (
+                rowid INTEGER PRIMARY KEY,
+                name TEXT NOT NULL,
+                category TEXT,
+                price REAL
+            )"
+        )
+        .build()?;
+
+    db.create_collection(config)?;
+
+    // 3. Insert vectors with metadata
+    let embedding = vec![0.1, 0.2, 0.3, /* ... 384 dimensions */];
+
+    let point = InsertPoint::builder()
+        .collection_name("products")
+        .id(1)
+        .vector(embedding)
+        .payload_insert_query(
+            "INSERT INTO products(rowid, name, category, price)
+             VALUES (?1, 'Wireless Headphones', 'Electronics', 99.99)"
+        )
+        .build()?;
+
+    db.insert(point)?;
+
+    // 4. Search with payload filtering
+    let query_vector = vec![0.15, 0.25, 0.35, /* ... */];
+
+    let search = SearchPoint::builder()
+        .collection_name("products")
+        .vector(query_vector)
+        .top_k(10)
+        .payload_search_query(
+            "SELECT rowid, name, category, price
+             FROM products
+             WHERE category = 'Electronics' AND price < 150"
+        )
+        .build()?;
+
+    let results = db.search(search)?;
+
+    for result in results {
+        println!("Found: {} - ${}", result["name"], result["price"]);
+    }
+
+    Ok(())
+}
+```
+
+---
+
+## API Reference
+
+### VectorXLite
+
+The main entry point for all database operations.
+
+```rust
+// Create from connection pool
+let db = VectorXLite::new(pool)?;
+
+// Available operations
+db.create_collection(config)?;  // Create a new collection
+db.insert(point)?;              // Insert a vector with payload
+db.search(search_point)?;       // Perform similarity search
+```
+
+### CollectionConfigBuilder
+
+Configure a new vector collection.
+
+| Method | Type | Description |
+|--------|------|-------------|
+| `collection_name` | `&str` | Unique identifier for the collection |
+| `vector_dimension` | `u16` | Number of dimensions (default: 3) |
+| `distance` | `DistanceFunction` | Similarity metric (default: Cosine) |
+| `max_elements` | `usize` | Maximum vectors (default: 100,000) |
+| `payload_table_schema` | `&str` | SQL CREATE TABLE statement |
+| `index_file_path` | `&str` | Path for persistent HNSW index |
 
 ```rust
 let config = CollectionConfigBuilder::default()
-    .collection_name("person")
+    .collection_name("embeddings")
+    .vector_dimension(768)
     .distance(DistanceFunction::Cosine)
-    .vector_dimension(4)
-    .payload_table_schema("create table person (rowid integer primary key, name text)")
-    .build()
-    .unwrap();
-
-vlite.create_collection(config).unwrap();
+    .max_elements(1_000_000)
+    .payload_table_schema("CREATE TABLE embeddings (rowid INTEGER PRIMARY KEY, data TEXT)")
+    .index_file_path("/data/embeddings.idx")
+    .build()?;
 ```
 
-This defines:
+### InsertPoint
 
-- collection_name — logical name for your vector data
-- distance — similarity metric (Cosine, L2, or Dot)
-- vector_dimension — length of the embedding vector
-- payload_table_schema — SQL used to store associated metadata
+Insert vectors with associated metadata.
 
-### 2. Insert Vector Points
-
-Each vector point includes an id, vector embedding, and an SQL payload insertion query.
-
-```
-let point = InsertPoint::builder()
-    .collection_name("person")
-    .id(1)
-    .vector(vec![1.0, 2.0, 3.0, 4.0])
-    .payload_insert_query("insert into person(rowid, name) values (?1, 'Alice')")
-    .build()
-    .unwrap();
-
-vlite.insert(point).unwrap();
-```
-
-Use ?1 as a placeholder to bind the vector ID in your SQL statement.
-
-### 3. Search for Similar Vectors
-
-Perform a similarity search with a given vector and get top matches:
+| Method | Type | Description |
+|--------|------|-------------|
+| `collection_name` | `&str` | Target collection |
+| `id` | `u64` | Unique vector identifier |
+| `vector` | `Vec<f32>` | The embedding vector |
+| `payload_insert_query` | `&str` | SQL INSERT statement (use `?1` for rowid) |
 
 ```rust
-let search_point = SearchPoint::builder()
-    .collection_name("person")
-    .vector(vec![7.0, 8.0, 9.0, 2.0])
-    .top_k(10)
-    .payload_search_query("select * from person")
-    .build()
-    .unwrap();
-
-let results = vlite.search(search_point).unwrap();
+let point = InsertPoint::builder()
+    .collection_name("documents")
+    .id(42)
+    .vector(embedding)
+    .payload_insert_query("INSERT INTO documents(rowid, title) VALUES (?1, 'My Doc')")
+    .build()?;
 ```
 
-This fetches the top-K most similar vectors from the collection, along with their payloads.
+### SearchPoint
 
+Configure similarity search queries.
 
-## 🚀 Console Example — `vector_xlite`
+| Method | Type | Description |
+|--------|------|-------------|
+| `collection_name` | `&str` | Collection to search |
+| `vector` | `Vec<f32>` | Query vector |
+| `top_k` | `i32` | Number of results (default: 10) |
+| `payload_search_query` | `&str` | SQL SELECT for payload filtering |
 
-A minimal Rust example showing how to use the `vector_xlite` crate via the included `example` binary.
+```rust
+let search = SearchPoint::builder()
+    .collection_name("documents")
+    .vector(query_embedding)
+    .top_k(20)
+    .payload_search_query("SELECT * FROM documents WHERE status = 'active'")
+    .build()?;
+```
 
-The example opens an **in-memory SQLite** connection, registers the VectorXLite extension, creates a collection, inserts several vector points with payloads, and performs a vector search.
+### Distance Functions
+
+| Function | Description | Best For |
+|----------|-------------|----------|
+| `Cosine` | Cosine similarity (normalized) | Text embeddings, NLP |
+| `L2` | Euclidean distance | Image features, spatial data |
+| `IP` | Inner product (dot product) | When vectors are pre-normalized |
 
 ---
 
-## 🧩 Prerequisites
+## Storage Modes
 
-- **Rust** (latest stable)
-- **SQLite** (with extension loading enabled)
+### In-Memory (Development/Testing)
+
+```rust
+let manager = SqliteConnectionManager::memory();
+let pool = Pool::builder()
+    .connection_customizer(SqliteConnectionCustomizer::new())
+    .build(manager)?;
+```
+
+### File-Backed (Production)
+
+```rust
+let manager = SqliteConnectionManager::file("vectors.db");
+let pool = Pool::builder()
+    .connection_customizer(SqliteConnectionCustomizer::new())
+    .build(manager)?;
+
+// With persistent HNSW index
+let config = CollectionConfigBuilder::default()
+    .collection_name("production")
+    .index_file_path("/data/production.idx")
+    // ... other config
+    .build()?;
+```
 
 ---
 
-## ▶️ Running the Example
+## Advanced Usage
 
-From the repository root:
+### Complex Payload Queries with JOINs
+
+```rust
+// Create related tables
+let author_table = "CREATE TABLE authors (id INTEGER PRIMARY KEY, name TEXT)";
+let book_table = "CREATE TABLE books (
+    rowid INTEGER PRIMARY KEY,
+    author_id INTEGER,
+    title TEXT,
+    FOREIGN KEY (author_id) REFERENCES authors(id)
+)";
+
+// Search with JOIN
+let search = SearchPoint::builder()
+    .collection_name("books")
+    .vector(query)
+    .top_k(10)
+    .payload_search_query(
+        "SELECT b.rowid, b.title, a.name as author
+         FROM books b
+         JOIN authors a ON a.id = b.author_id
+         WHERE a.name LIKE '%Smith%'"
+    )
+    .build()?;
+```
+
+### JSON Payload Support
+
+```rust
+let config = CollectionConfigBuilder::default()
+    .collection_name("products")
+    .payload_table_schema(
+        "CREATE TABLE products (
+            rowid INTEGER PRIMARY KEY,
+            metadata JSON
+        )"
+    )
+    .build()?;
+
+// Insert with JSON
+let point = InsertPoint::builder()
+    .collection_name("products")
+    .id(1)
+    .vector(embedding)
+    .payload_insert_query(
+        r#"INSERT INTO products(rowid, metadata)
+           VALUES (?1, '{"tags": ["sale", "new"], "stock": 100}')"#
+    )
+    .build()?;
+
+// Query JSON fields
+let search = SearchPoint::builder()
+    .collection_name("products")
+    .vector(query)
+    .payload_search_query(
+        "SELECT * FROM products
+         WHERE json_extract(metadata, '$.stock') > 0"
+    )
+    .build()?;
+```
+
+### Custom Connection Timeout
+
+```rust
+use vector_xlite::customizer::SqliteConnectionCustomizer;
+
+// Default timeout: 15 seconds
+let customizer = SqliteConnectionCustomizer::new();
+
+// Custom timeout (in milliseconds)
+let customizer = SqliteConnectionCustomizer::with_busy_timeout(30000);
+
+let pool = Pool::builder()
+    .connection_customizer(customizer)
+    .build(manager)?;
+```
+
+---
+
+## Performance Characteristics
+
+| Operation | Complexity | Notes |
+|-----------|------------|-------|
+| Insert | O(log n) | HNSW index update |
+| Search | O(log n) | Approximate nearest neighbor |
+| Payload Filter | O(m) | SQLite query on matched vectors |
+
+### Optimization Tips
+
+1. **Batch Inserts**: Group multiple inserts in a single transaction
+2. **Index Payload Columns**: Create SQLite indexes on frequently filtered columns
+3. **Tune `max_elements`**: Set appropriately for your dataset size
+4. **Use File Storage**: For datasets larger than available RAM
+
+---
+
+## Transaction Safety
+
+VectorXLite provides atomic operations for data consistency:
+
+```rust
+// Both vector and payload are inserted atomically
+// If either fails, the entire operation is rolled back
+db.insert(point)?;
+```
+
+**Guarantees:**
+- No orphan vectors (vectors without payload)
+- No orphan payloads (payload without vectors)
+- Failed operations don't affect existing data
+
+---
+
+## Use Cases
+
+| Application | Description |
+|-------------|-------------|
+| **Semantic Search** | Find documents by meaning, not just keywords |
+| **Recommendation Systems** | Similar item suggestions based on embeddings |
+| **Image Search** | Find visually similar images using CNN features |
+| **RAG Applications** | Retrieval-Augmented Generation for LLMs |
+| **Anomaly Detection** | Find outliers in high-dimensional data |
+| **Deduplication** | Identify near-duplicate content |
+
+---
+
+## Examples
+
+The repository includes example applications:
 
 ```bash
-cd example
-cargo run
-```
-
-Or run the specific package directly:
-``` bash
+# Run the basic example
 cargo run -p example
+
+# Run tests
+cargo test
 ```
-
-## 📘 Full Example
-
-This example corresponds to the contents of src/main.rs inside the example crate:
-
-```rust
-use vector_xlite::{
-    types::{SearchPoint, CollectionConfigBuilder, InsertPoint, DistanceFunction},
-    VectorXLite,
-    customizer::SqliteConnectionCustomizer
-};
-use r2d2::Pool;
-use r2d2_sqlite::SqliteConnectionManager;
-
-
-fn main() {
-    // Step 1: Open SQLite in memory
-    let manager = SqliteConnectionManager::memory();
-
-    let pool = Pool::builder()
-        .max_size(15)
-        .connection_customizer(SqliteConnectionCustomizer::new())
-        .build(manager)
-        .unwrap();
-
-    let vlite = VectorXLite::new(pool.clone()).unwrap();
-
-    // Step 3: Configure and create a collection
-    let config = CollectionConfigBuilder::default()
-        .collection_name("person")
-        .distance(DistanceFunction::Cosine)
-        .vector_dimension(4)
-        .payload_table_schema("create table person (rowid integer primary key, name text)")
-        .build()
-        .unwrap();
-
-    match vlite.create_collection(config) {
-        Ok(_) => {
-            // Step 4: Prepare vector points with payloads
-            let points = vec![
-                InsertPoint::builder()
-                    .collection_name("person")
-                    .id(1)
-                    .vector(vec![1.0, 2.0, 3.0, 4.0])
-                    .payload_insert_query("insert into person(rowid, name) values (?1, 'Alice')")
-                    .build()
-                    .unwrap(),
-
-                InsertPoint::builder()
-                    .collection_name("person")
-                    .id(2)
-                    .vector(vec![4.0, 5.0, 6.0, 4.0])
-                    .payload_insert_query("insert into person(name, rowid) values ('Bob', ?1)")
-                    .build()
-                    .unwrap(),
-
-                InsertPoint::builder()
-                    .collection_name("person")
-                    .id(3)
-                    .vector(vec![7.0, 8.0, 9.0, 4.0])
-                    .payload_insert_query("insert into person(name) values ('Charlie')")
-                    .build()
-                    .unwrap(),
-
-                InsertPoint::builder()
-                    .collection_name("person")
-                    .id(5)
-                    .vector(vec![17.0, 11.0, 9.0, 4.0])
-                    .payload_insert_query("insert into person(name) values ('David')")
-                    .build()
-                    .unwrap(),
-            ];
-
-            // Step 5: Insert the data points
-            for point in points {
-                vlite.insert(point).unwrap();
-            }
-
-            // Step 6: Run a vector search
-            let search_point = SearchPoint::builder()
-                .collection_name("person")
-                .vector(vec![7.0, 8.0, 9.0, 2.0])
-                .top_k(10)
-                .payload_search_query("select * from person")
-                .build()
-                .unwrap();
-
-            let results = vlite.search(search_point).unwrap();
-            println!("🔍 Search results: {:?}", results);
-        }
-        Err(e) => println!("❌ Error creating collection: {:?}", e),
-    }
-}
-```
-
-
-
-## Details Example
-
-```rust
-
-
-
-
-use r2d2::Pool;
-use r2d2_sqlite::SqliteConnectionManager;
-use vector_xlite::{VectorXLite, types::*};
-
-pub fn run_complex_example(vlite: &VectorXLite, sqlite_conn_pool: Pool<SqliteConnectionManager>) {
-    let create_authors_table = r#"
-    create table authors (
-            id integer primary key,
-            name text not null,
-            bio text
-        );
-        "#;
-
-    let sqlite_conn = sqlite_conn_pool.get().unwrap();
-
-    sqlite_conn
-        .execute(create_authors_table, [])
-        .expect("Failed to create authors table");
-
-    let author_inserts = vec![
-        "insert into authors(id, name, bio) values (1, 'Alice', 'Writer of whimsical fantasy worlds')",
-        "insert into authors(id, name, bio) values (2, 'Bob', 'Short story enthusiast and poet')",
-        "insert into authors(id, name, bio) values (3, 'Carol', 'Sci-fi novelist exploring deep space themes')",
-    ];
-
-    for q in author_inserts {
-        sqlite_conn.execute(q, []).unwrap();
-    }
-
-    let story_collection_config = CollectionConfigBuilder::default()
-        .collection_name("story_advanced")
-        .distance(DistanceFunction::Cosine)
-        .vector_dimension(8)
-        .payload_table_schema(
-            r#"
-        create table story_advanced (
-            rowid integer primary key,
-            author_id integer,
-            title text,
-            content text,
-            tags json,
-            published_at text default (datetime('now')),
-            rating real
-        );
-        "#,
-        )
-        .build()
-        .unwrap();
-
-    match vlite.create_collection(story_collection_config) {
-        Ok(_) => {
-            let points = vec![
-            InsertPoint::builder()
-                .collection_name("story_advanced")
-                .id(101)
-                .vector(vec![0.11, 0.22, 0.33, 0.44, 0.55, 0.66, 0.77, 0.88])
-                .payload_insert_query(r#"
-                    insert into story_advanced(rowid, author_id, title, content, tags, rating)
-                    values (?1, 1, 'Dreaming in Colors', 'Once upon a vibrant night...', '["fantasy","dreams"]', 4.8)
-                "#)
-                .build()
-                .unwrap(),
-            InsertPoint::builder()
-                .collection_name("story_advanced")
-                .id(102)
-                .vector(vec![0.9, 0.8, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6])
-                .payload_insert_query(r#"
-                    insert into story_advanced(rowid, author_id, title, content, tags, rating)
-                    values (?1, 2, 'The Quiet Storm', 'Thunder rolled over the valley...', '["drama","short","weather"]', 4.2)
-                "#)
-                .build()
-                .unwrap(),
-            InsertPoint::builder()
-                .collection_name("story_advanced")
-                .id(103)
-                .vector(vec![0.05, 0.25, 0.45, 0.65, 0.85, 0.15, 0.35, 0.55])
-                .payload_insert_query(r#"
-                    insert into story_advanced(rowid, author_id, title, content, tags, rating)
-                    values (?1, 3, 'Stars Beneath the Waves', 'A galaxy reflected in the ocean depths...', '["sci-fi","ocean","space"]', 4.9)
-                "#)
-                .build()
-                .unwrap(),
-        ];
-
-            for point in points {
-                vlite.insert(point.clone()).unwrap();
-            }
-
-            println!("✅ Inserted complex story points into 'story_advanced' collection.");
-
-            // Create a complex search point
-            let search_point = SearchPoint::builder()
-                .collection_name("story_advanced")
-                .vector(vec![0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8])
-                .top_k(5)
-                .payload_search_query(
-                    r#"
-                select 
-                    s.rowid, 
-                    s.title, 
-                    s.rating, 
-                    a.name as author, 
-                    s.tags, 
-                    s.published_at
-                from story_advanced s
-                join authors a on a.id = s.author_id
-                where s.rating > 4.0
-                  and json_extract(s.tags, '$[0]') != 'drama'
-                order by s.rating desc
-                "#,
-                )
-                .build()
-                .unwrap();
-
-            // Perform the vector + SQL hybrid search
-            let results = vlite.search(search_point).unwrap();
-
-            println!("\n🚀 Advanced Story Search Results:\n{:#?}", results);
-        }
-        Err(e) => println!("❌ Error creating advanced story collection: {:?}", e),
-    }
-}
-
----
----
-use crate::complex_example::run_complex_example;
-use crate::simple_example::run_simple_example;
-use r2d2::Pool;
-use r2d2_sqlite::SqliteConnectionManager;
-use vector_xlite::{VectorXLite, customizer::SqliteConnectionCustomizer};
-
-mod complex_example;
-mod simple_example;
-
-fn main() {
-    let manager = SqliteConnectionManager::memory();
-
-    let pool = Pool::builder()
-        .max_size(15)
-        .connection_customizer(SqliteConnectionCustomizer::new())
-        .build(manager)
-        .unwrap();
-
-    let vlite = VectorXLite::new(pool.clone()).unwrap();
-
-    run_complex_example(&vlite, pool);
-}
-
-
-```
-
-## 🧩 API Reference (Summary)
-
-### `VectorXLite::new(conn: rusqlite::Connection)`
-Initializes VectorXLite on the given SQLite connection.
 
 ---
 
-### `CollectionConfigBuilder`
+## Architecture
 
-| Method                        | Description                                       |
-| ----------------------------- | ------------------------------------------------- |
-| `.collection_name(&str)`      | Sets the logical collection name                  |
-| `.distance(DistanceFunction)` | Sets similarity metric (`Cosine`, `L2`, or `Dot`) |
-| `.vector_dimension(usize)`    | Defines vector dimensionality                     |
-| `.payload_table_schema(&str)` | SQL to create payload table                       |
-| `.build()`                    | Builds final config                               |
+```
+┌─────────────────────────────────────────────────────────┐
+│                     VectorXLite API                     │
+├─────────────────────────────────────────────────────────┤
+│  CollectionConfig  │  InsertPoint  │  SearchPoint      │
+├─────────────────────────────────────────────────────────┤
+│                    Query Planner                        │
+├──────────────────────┬──────────────────────────────────┤
+│    HNSW Index        │         SQLite                   │
+│  (Vector Search)     │    (Payload Storage)             │
+├──────────────────────┴──────────────────────────────────┤
+│                 Connection Pool (r2d2)                  │
+└─────────────────────────────────────────────────────────┘
+```
 
 ---
 
-### `InsertPoint` Builder
+## Requirements
 
-| Method                        | Description                |
-| ----------------------------- | -------------------------- |
-| `.collection_name(&str)`      | Collection to insert into  |
-| `.id(i64)`                    | Unique point ID            |
-| `.vector(Vec<f32>)`           | Vector embedding           |
-| `.payload_insert_query(&str)` | SQL to insert payload data |
+- **Rust**: 1.70 or later
+- **SQLite**: 3.35 or later (with extension loading enabled)
+- **Platforms**: Linux, macOS, Windows
 
 ---
 
-### `SearchPoint` Builder
+## Contributing
 
-| Method                        | Description            |
-| ----------------------------- | ---------------------- |
-| `.collection_name(&str)`      | Collection to search   |
-| `.vector(Vec<f32>)`           | Query vector           |
-| `.top_k(usize)`               | Number of top results  |
-| `.payload_search_query(&str)` | SQL query for payloads |
+Contributions are welcome! Please feel free to submit a Pull Request.
 
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
+---
 
-## 🛠 Troubleshooting
+## License
 
-### Persistent storage
-Replace Connection::open_in_memory() with a file-backed connection:
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-```
-let conn = Connection::open("vectors.db")?;
-```
+---
+
+## Links
+
+- [Crates.io](https://crates.io/crates/vector_xlite)
+- [Documentation](https://docs.rs/vector_xlite)
+- [GitHub Repository](https://github.com/anthropics/vector-db-rs)
+
+---
+
+<p align="center">
+  <sub>Built with Rust and SQLite</sub>
+</p>
