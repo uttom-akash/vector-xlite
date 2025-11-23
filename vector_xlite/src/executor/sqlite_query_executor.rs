@@ -10,9 +10,7 @@ pub(crate) struct SqliteQueryExecutor {
 
 impl SqliteQueryExecutor {
     pub fn new(conn_pool: Pool<SqliteConnectionManager>) -> Box<dyn QueryExecutor> {
-        Box::new(SqliteQueryExecutor {
-            conn_pool,
-        })
+        Box::new(SqliteQueryExecutor { conn_pool })
     }
 }
 
@@ -21,31 +19,27 @@ impl QueryExecutor for SqliteQueryExecutor {
         &self,
         query_plans: Vec<QueryPlan>,
     ) -> Result<(), VecXError> {
-        let mut conn = self
-                .conn_pool
-                .get()?;
+        let mut conn = self.conn_pool.get()?;
+        let trx = conn.transaction()?;
 
-        let mut trx = conn.transaction_with_behavior(rusqlite::TransactionBehavior::Deferred)?;
-        trx.set_drop_behavior(DropBehavior::Commit);
+        for plan in &query_plans {
+            trx.execute(&plan.sql, rusqlite::params_from_iter(plan.params.iter()))?;
+        }
 
-        query_plans.iter().try_for_each(|plan| {
-            trx.execute(&plan.sql, rusqlite::params_from_iter(&plan.params))?;
-            Ok(())
-        })
+        trx.commit()?;
+        Ok(())
     }
 
     fn execute_insert_query(&self, query_plans: Vec<QueryPlan>) -> rusqlite::Result<(), VecXError> {
-        let mut conn = self
-                .conn_pool
-                .get()?;
+        let mut conn = self.conn_pool.get()?;
+        let trx = conn.transaction()?;
 
-        let mut trx = conn.transaction_with_behavior(rusqlite::TransactionBehavior::Deferred)?;
-        trx.set_drop_behavior(DropBehavior::Commit);
-        
-        query_plans.iter().try_for_each(|plan| {
+        for plan in &query_plans {
             trx.execute(&plan.sql, rusqlite::params_from_iter(&plan.params))?;
-            Ok(())
-        })
+        }
+
+        trx.commit()?;
+        Ok(())
     }
 
     fn execute_search_query(
