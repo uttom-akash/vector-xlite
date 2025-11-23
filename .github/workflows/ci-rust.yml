@@ -26,8 +26,11 @@ jobs:
         run : cargo build --release
         working-directory: ./vector_xlite_tests
 
+      - name: Install cargo NextTest
+        run : cargo install cargo-nextest
+
       - name: Run Vector XLite Tests
-        run : cargo test
+        run : cargo nextest run --no-fail-fast --jobs=1
         working-directory: ./vector_xlite_tests
 
       - name: Build Vector XLite Examples

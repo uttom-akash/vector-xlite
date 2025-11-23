@@ -1,7 +1,7 @@
 use r2d2::CustomizeConnection;
 use rusqlite::Connection;
 
-use crate::helper::load_sqlite_vector_extension;
+use crate::{constant::DEFAULT_SQLITE_TIMEOUT, helper::load_sqlite_vector_extension};
 
 /// Connection customizer for SQLite that loads the vector extension and configures
 /// the connection for optimal concurrent access.
@@ -14,7 +14,7 @@ impl SqliteConnectionCustomizer {
     /// Creates a new customizer with default settings (5 second busy timeout).
     pub fn new() -> Box<Self> {
         Box::new(SqliteConnectionCustomizer {
-            busy_timeout_ms: 5000,
+            busy_timeout_ms: DEFAULT_SQLITE_TIMEOUT,
         })
     }
 
@@ -31,7 +31,7 @@ impl SqliteConnectionCustomizer {
 impl Default for SqliteConnectionCustomizer {
     fn default() -> Self {
         SqliteConnectionCustomizer {
-            busy_timeout_ms: 5000,
+            busy_timeout_ms: DEFAULT_SQLITE_TIMEOUT,
         }
     }
 }
@@ -41,7 +41,12 @@ impl CustomizeConnection<Connection, rusqlite::Error> for SqliteConnectionCustom
         // Set busy timeout for better concurrent access handling
         // This makes SQLite wait and retry instead of immediately returning SQLITE_BUSY
         conn.busy_timeout(std::time::Duration::from_millis(self.busy_timeout_ms as u64))?;
+        // Enable WAL mode
+        conn.pragma_update(None, "journal_mode", "WAL")?;
 
+        // Recommended for WAL
+        conn.pragma_update(None, "synchronous", "NORMAL")?;
+        
         // Load the vector extension
         load_sqlite_vector_extension(conn).map_err(|e| {
             rusqlite::Error::SqliteFailure(rusqlite::ffi::Error::new(1), Some(e.to_string()))

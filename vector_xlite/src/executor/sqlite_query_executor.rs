@@ -1,7 +1,7 @@
 use crate::{error::VecXError, executor::query_executor::QueryExecutor, types::QueryPlan};
 use r2d2::Pool;
 use r2d2_sqlite::SqliteConnectionManager;
-use rusqlite::Result;
+use rusqlite::{DropBehavior, Result};
 use std::collections::HashMap;
 
 pub(crate) struct SqliteQueryExecutor {
@@ -10,9 +10,7 @@ pub(crate) struct SqliteQueryExecutor {
 
 impl SqliteQueryExecutor {
     pub fn new(conn_pool: Pool<SqliteConnectionManager>) -> Box<dyn QueryExecutor> {
-        Box::new(SqliteQueryExecutor {
-            conn_pool,
-        })
+        Box::new(SqliteQueryExecutor { conn_pool })
     }
 }
 
@@ -21,21 +19,27 @@ impl QueryExecutor for SqliteQueryExecutor {
         &self,
         query_plans: Vec<QueryPlan>,
     ) -> Result<(), VecXError> {
-        query_plans.iter().try_for_each(|plan| {
-            self.conn_pool
-                .get()?
-                .execute(&plan.sql, rusqlite::params_from_iter(&plan.params))?;
-            Ok(())
-        })
+        let mut conn = self.conn_pool.get()?;
+        let trx = conn.transaction()?;
+
+        for plan in &query_plans {
+            trx.execute(&plan.sql, rusqlite::params_from_iter(plan.params.iter()))?;
+        }
+
+        trx.commit()?;
+        Ok(())
     }
 
     fn execute_insert_query(&self, query_plans: Vec<QueryPlan>) -> rusqlite::Result<(), VecXError> {
-        query_plans.iter().try_for_each(|plan| {
-            self.conn_pool
-                .get()?
-                .execute(&plan.sql, rusqlite::params_from_iter(&plan.params))?;
-            Ok(())
-        })
+        let mut conn = self.conn_pool.get()?;
+        let trx = conn.transaction()?;
+
+        for plan in &query_plans {
+            trx.execute(&plan.sql, rusqlite::params_from_iter(&plan.params))?;
+        }
+
+        trx.commit()?;
+        Ok(())
     }
 
     fn execute_search_query(

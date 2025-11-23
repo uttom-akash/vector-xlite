@@ -1,4 +1,3 @@
-
 use crate::error::VecXError;
 use crate::helper::*;
 use crate::planner::query_planner::QueryPlanner;
@@ -22,6 +21,15 @@ impl QueryPlanner for SqliteQueryPlanner {
         collection_config: CollectionConfig,
     ) -> Result<Vec<QueryPlan>, VecXError> {
         let mut query_plans: Vec<QueryPlan> = Vec::new();
+
+        if collection_config.payload_table_schema.is_some() {
+            query_plans.push(QueryPlan {
+                sql: collection_config.payload_table_schema.unwrap(),
+                params: vec![],
+                post_process: None,
+            });
+        }
+
         let virtual_table_name = get_vector_table_name(collection_config.collection_name.as_str());
 
         let mut virtual_table_query = format!(
@@ -46,19 +54,31 @@ impl QueryPlanner for SqliteQueryPlanner {
             post_process: None,
         });
 
-        if collection_config.payload_table_schema.is_some() {
-            query_plans.push(QueryPlan {
-                sql: collection_config.payload_table_schema.unwrap(),
-                params: vec![],
-                post_process: None,
-            });
-        }
-
         Ok(query_plans)
     }
 
     fn plan_insert_query(&self, create_point: InsertPoint) -> Result<Vec<QueryPlan>, VecXError> {
         let mut query_plans: Vec<QueryPlan> = Vec::new();
+
+        let mut payload_insert_query = create_point.payload_insert_query;
+        if payload_insert_query.is_none() {
+            payload_insert_query = Some(
+                generate_insert_with_defaults(
+                    self.conn_pool.clone(),
+                    create_point.collection_name.as_str(),
+                )
+                .unwrap(),
+            );
+        }
+
+        query_plans.push(QueryPlan {
+            sql: inject_rowid(
+                payload_insert_query.as_ref().unwrap(),
+                create_point.id.unwrap(),
+            ),
+            params: vec![],
+            post_process: None,
+        });
 
         let vector_json = format!("{:?}", create_point.vector);
 
@@ -72,20 +92,6 @@ impl QueryPlanner for SqliteQueryPlanner {
         query_plans.push(QueryPlan {
             sql: insert_query,
             params: vec![Box::new(create_point.id), Box::new(vector_json.clone())],
-            post_process: None,
-        });
-
-        let mut payload_insert_query = create_point.payload_insert_query;
-        if payload_insert_query.is_none(){
-            payload_insert_query = Some(generate_insert_with_defaults(self.conn_pool.clone(), create_point.collection_name.as_str()).unwrap());
-        }
-
-        query_plans.push(QueryPlan {
-            sql: inject_rowid(
-                payload_insert_query.as_ref().unwrap(),
-                create_point.id.unwrap(),
-            ),
-            params: vec![],
             post_process: None,
         });
 
