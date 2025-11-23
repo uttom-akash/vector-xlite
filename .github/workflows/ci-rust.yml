@@ -26,6 +26,9 @@ jobs:
         run : cargo build --release
         working-directory: ./vector_xlite_tests
 
+      - name: Install cargo NextTest
+        run : cargo install cargo-nextest
+
       - name: Run Vector XLite Tests
         run : cargo nextest run
         working-directory: ./vector_xlite_tests
