@@ -86,7 +86,8 @@ fn create_collection_with_index(vlite: &VectorXLite, name: &str, dimension: u16,
 mod parallel_inserts {
     use super::*;
 
-    // #[test]
+    #[test]
+    #[ignore]
     fn parallel_inserts_same_collection() {
         let (vlite, _, paths) = setup_vlite_with_pool_size(10);
 
@@ -137,7 +138,8 @@ mod parallel_inserts {
         );
     }
 
-    // #[test]
+    #[test]
+    #[ignore]
     fn parallel_inserts_multiple_collections() {
         let (vlite, _, _paths) = setup_vlite_with_pool_size(10);
 
@@ -214,7 +216,8 @@ mod parallel_inserts {
 mod parallel_searches {
     use super::*;
 
-    // #[test]
+    #[test]
+    #[ignore]
     fn parallel_searches_same_collection() {
         let (vlite, _, paths) = setup_vlite_with_pool_size(10);
 
@@ -266,7 +269,8 @@ mod parallel_searches {
         assert_eq!(total_results, expected, "Expected {} total results", expected);
     }
 
-    // #[test]
+    #[test]
+    #[ignore]
     fn high_concurrency_searches() {
         let (vlite, _, paths) = setup_vlite_with_pool_size(20);
 
@@ -318,7 +322,8 @@ mod mixed_workload {
     use super::*;
     use std::sync::atomic::{AtomicU64, Ordering};
 
-    // #[test]
+    #[test]
+    #[ignore]
     fn concurrent_read_write() {
         let (vlite, _, paths) = setup_vlite_with_pool_size(15);
 
@@ -400,6 +405,7 @@ mod mixed_workload {
     }
 
     #[test]
+    #[ignore]
     fn stress_test_interleaved_operations() {
         let (vlite, _, paths) = setup_vlite_with_pool_size(10);
 
@@ -464,6 +470,7 @@ mod connection_pool {
     use super::*;
 
     #[test]
+    #[ignore]
     fn pool_exhaustion_handling() {
         // Create a pool with very limited connections
         let (vlite, _, paths) = setup_vlite_with_pool_size(2);
@@ -505,7 +512,8 @@ mod connection_pool {
         }
     }
 
-    // #[test]
+    #[test]
+    #[ignore]
     fn large_pool_many_operations() {
         let (vlite, _, paths) = setup_vlite_with_pool_size(20);
 

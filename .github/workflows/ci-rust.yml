@@ -27,7 +27,7 @@ jobs:
         working-directory: ./vector_xlite_tests
 
       - name: Run Vector XLite Tests
-        run : cargo test
+        run : cargo nextest run
         working-directory: ./vector_xlite_tests
 
       - name: Build Vector XLite Examples

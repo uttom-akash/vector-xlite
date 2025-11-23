@@ -1,7 +1,7 @@
 use r2d2::CustomizeConnection;
 use rusqlite::Connection;
 
-use crate::helper::load_sqlite_vector_extension;
+use crate::{constant::DEFAULT_SQLITE_TIMEOUT, helper::load_sqlite_vector_extension};
 
 /// Connection customizer for SQLite that loads the vector extension and configures
 /// the connection for optimal concurrent access.
@@ -14,7 +14,7 @@ impl SqliteConnectionCustomizer {
     /// Creates a new customizer with default settings (5 second busy timeout).
     pub fn new() -> Box<Self> {
         Box::new(SqliteConnectionCustomizer {
-            busy_timeout_ms: 5000,
+            busy_timeout_ms: DEFAULT_SQLITE_TIMEOUT,
         })
     }
 
@@ -31,7 +31,7 @@ impl SqliteConnectionCustomizer {
 impl Default for SqliteConnectionCustomizer {
     fn default() -> Self {
         SqliteConnectionCustomizer {
-            busy_timeout_ms: 5000,
+            busy_timeout_ms: DEFAULT_SQLITE_TIMEOUT,
         }
     }
 }
