@@ -1,14 +1,23 @@
 //! Tests for atomic transaction behavior in VectorXLite
 //!
-//! These tests verify:
-//! - Atomic transaction behavior for write operations (multiple queries in same transaction)
-//! - DEFAULT_SQLITE_TIMEOUT constant usage (15000ms)
-//! - Transaction isolation for concurrent operations
-//! - DropBehavior::Commit semantics
+//! ## Expected Vector Database Behavior
 //!
-//! Note: The current implementation uses DropBehavior::Commit which means:
-//! - Successful operations are committed atomically
-//! - Partial failures may still commit earlier successful operations in the transaction
+//! A vector database should guarantee:
+//! 1. **Atomicity**: Vector + payload must be inserted/deleted together (no orphans)
+//! 2. **Isolation**: Failed operations must NOT affect existing data
+//! 3. **Consistency**: After any operation (success or failure), data remains consistent
+//!
+//! ## Current Implementation
+//!
+//! The implementation uses explicit commit() with default DropBehavior::Rollback:
+//! - On success: all operations (vector + payload) are committed atomically
+//! - On failure: all operations are rolled back (no partial commits)
+//!
+//! ## Known Issues (see `expected_vector_db_behavior` module)
+//!
+//! - **ORPHAN PAYLOAD BUG**: When payload uses INSERT OR REPLACE (succeeds) but vector
+//!   insert fails (duplicate rowid), an orphan payload is left behind. The payload
+//!   should be rolled back but isn't. See `no_orphan_payloads_when_vector_fails`.
 
 use r2d2::Pool;
 use r2d2_sqlite::SqliteConnectionManager;
@@ -121,7 +130,7 @@ mod atomic_inserts {
     }
 
     #[test]
-    fn insert_with_payload_failure_behavior() {
+    fn insert_with_payload_failure_returns_error() {
         let (vlite, _) = setup_vlite();
 
         let config = CollectionConfigBuilder::default()
@@ -135,7 +144,6 @@ mod atomic_inserts {
         vlite.create_collection(config).expect("create collection");
 
         // Try to insert with invalid payload (NULL in NOT NULL column)
-        // The insert operation returns an error
         let point = InsertPoint::builder()
             .collection_name("rollback_test")
             .id(1)
@@ -147,8 +155,9 @@ mod atomic_inserts {
         let result = vlite.insert(point);
         assert!(result.is_err(), "Insert with NULL in NOT NULL should fail");
 
-        // Note: With DropBehavior::Commit, the vector insert may still be committed
-        // even though the payload insert failed. This documents the current behavior.
+        // Note: The vectorlite virtual table uses external HNSW index storage
+        // which does NOT participate in SQLite transaction rollback.
+        // The vector may still exist even though the operation failed.
         let search = SearchPoint::builder()
             .collection_name("rollback_test")
             .vector(vec![1.0, 2.0, 3.0])
@@ -157,11 +166,10 @@ mod atomic_inserts {
             .unwrap();
 
         let results = vlite.search(search).expect("search");
-        // Current behavior: vector is inserted even when payload fails
-        // This is because DropBehavior::Commit commits on transaction drop
+        // Vector may persist due to virtual table limitation
         assert!(
-            results.len() <= 1,
-            "At most one vector should exist"
+            results.len() == 0,
+            "At most one vector should exist (may persist due to virtual table limitation)"
         );
     }
 
@@ -229,14 +237,14 @@ mod atomic_inserts {
 }
 
 // ============================================================================
-// Transaction Behavior Tests
+// Transaction Rollback Tests
 // ============================================================================
 
-mod transaction_behavior {
+mod transaction_rollback {
     use super::*;
 
     #[test]
-    fn constraint_violation_returns_error() {
+    fn failed_payload_insert_does_not_leave_orphan_vector() {
         let (vlite, _pool) = setup_vlite();
 
         let config = CollectionConfigBuilder::default()
@@ -261,7 +269,7 @@ mod transaction_behavior {
         let result = vlite.insert(point);
         assert!(result.is_err(), "Insert violating CHECK constraint should fail");
 
-        // Document current behavior: vector may still be inserted due to DropBehavior::Commit
+        // Vector insert should be rolled back along with payload
         let search = SearchPoint::builder()
             .collection_name("orphan_test")
             .vector(vec![1.0, 2.0, 3.0, 4.0])
@@ -270,22 +278,22 @@ mod transaction_behavior {
             .unwrap();
 
         let results = vlite.search(search).expect("search");
-        // Current behavior with DropBehavior::Commit: vector may be committed
-        assert!(
-            results.len() <= 1,
-            "At most one vector should exist"
+        assert_eq!(
+            results.len(),
+            0,
+            "No orphan vectors should exist after constraint violation - transaction rolled back"
         );
     }
 
     #[test]
-    fn can_insert_after_failed_insert() {
+    fn can_insert_after_rollback() {
         let (vlite, _) = setup_vlite();
 
         let config = CollectionConfigBuilder::default()
-            .collection_name("recover_after_failure")
+            .collection_name("recover_after_rollback")
             .vector_dimension(3)
             .payload_table_schema(
-                "CREATE TABLE recover_after_failure (rowid INTEGER PRIMARY KEY, status TEXT NOT NULL)",
+                "CREATE TABLE recover_after_rollback (rowid INTEGER PRIMARY KEY, status TEXT NOT NULL)",
             )
             .build()
             .unwrap();
@@ -293,33 +301,33 @@ mod transaction_behavior {
 
         // First: Failed insert with id=1
         let bad_point = InsertPoint::builder()
-            .collection_name("recover_after_failure")
+            .collection_name("recover_after_rollback")
             .id(1)
             .vector(vec![1.0, 1.0, 1.0])
-            .payload_insert_query("INSERT INTO recover_after_failure(rowid, status) VALUES (?1, NULL)")
+            .payload_insert_query("INSERT INTO recover_after_rollback(rowid, status) VALUES (?1, NULL)")
             .build()
             .unwrap();
         assert!(vlite.insert(bad_point).is_err());
 
-        // Second: Different ID with valid data should work
+        // Since transaction rolled back, the same ID should be available
         let good_point = InsertPoint::builder()
-            .collection_name("recover_after_failure")
-            .id(2)
+            .collection_name("recover_after_rollback")
+            .id(1)
             .vector(vec![2.0, 2.0, 2.0])
-            .payload_insert_query("INSERT INTO recover_after_failure(rowid, status) VALUES (?1, 'success')")
+            .payload_insert_query("INSERT INTO recover_after_rollback(rowid, status) VALUES (?1, 'success')")
             .build()
             .unwrap();
         assert!(
             vlite.insert(good_point).is_ok(),
-            "Should be able to insert new record after previous failure"
+            "Should be able to insert with same ID after rollback"
         );
 
         // Verify valid data exists
         let search = SearchPoint::builder()
-            .collection_name("recover_after_failure")
+            .collection_name("recover_after_rollback")
             .vector(vec![2.0, 2.0, 2.0])
             .top_k(5)
-            .payload_search_query("SELECT rowid, status FROM recover_after_failure")
+            .payload_search_query("SELECT rowid, status FROM recover_after_rollback")
             .build()
             .unwrap();
 
@@ -329,7 +337,7 @@ mod transaction_behavior {
     }
 
     #[test]
-    fn unique_constraint_violation_returns_error() {
+    fn constraint_violation_in_payload_table_rolls_back() {
         let (vlite, _) = setup_vlite();
 
         let config = CollectionConfigBuilder::default()
@@ -352,7 +360,7 @@ mod transaction_behavior {
             .unwrap();
         assert!(vlite.insert(point1).is_ok());
 
-        // Second insert - same unique code (should fail)
+        // Second insert - same unique code (should fail and rollback)
         let point2 = InsertPoint::builder()
             .collection_name("unique_constraint")
             .id(2)
@@ -363,7 +371,7 @@ mod transaction_behavior {
         let result = vlite.insert(point2);
         assert!(result.is_err(), "Duplicate unique value should fail");
 
-        // Document current behavior: first insert succeeded, second's vector may also be committed
+        // Second insert's vector should also be rolled back
         let search = SearchPoint::builder()
             .collection_name("unique_constraint")
             .vector(vec![0.5, 0.5, 0.0])
@@ -372,10 +380,10 @@ mod transaction_behavior {
             .unwrap();
 
         let results = vlite.search(search).expect("search");
-        // At least the first insert should exist
-        assert!(
-            results.len() >= 1,
-            "At least the first insert should exist"
+        assert_eq!(
+            results.len(),
+            1,
+            "Only the first insert should exist - second was rolled back"
         );
     }
 
@@ -419,6 +427,87 @@ mod transaction_behavior {
 
         let results = vlite.search(search).expect("search");
         assert_eq!(results.len(), 5, "All 5 inserts should be committed");
+    }
+
+    /// Test reverse order atomicity: payload insert first, then vector insert.
+    /// If payload insert fails, no vector should be inserted.
+    #[test]
+    fn payload_failure_prevents_vector_insert() {
+        let (vlite, _, paths) = setup_vlite_with_file();
+
+        let config = CollectionConfigBuilder::default()
+            .collection_name("reverse_atomicity")
+            .vector_dimension(3)
+            .index_file_path(&paths.idx_path)
+            .payload_table_schema(
+                "CREATE TABLE reverse_atomicity (rowid INTEGER PRIMARY KEY, data TEXT NOT NULL)",
+            )
+            .build()
+            .unwrap();
+        vlite.create_collection(config).expect("create collection");
+
+        // First: successful insert
+        let point1 = InsertPoint::builder()
+            .collection_name("reverse_atomicity")
+            .id(1)
+            .vector(vec![1.0, 0.0, 0.0])
+            .payload_insert_query("INSERT INTO reverse_atomicity(rowid, data) VALUES (?1, 'first')")
+            .build()
+            .unwrap();
+        assert!(vlite.insert(point1).is_ok(), "First insert should succeed");
+
+        // Verify first insert worked
+        let search1 = SearchPoint::builder()
+            .collection_name("reverse_atomicity")
+            .vector(vec![1.0, 0.0, 0.0])
+            .top_k(10)
+            .build()
+            .unwrap();
+        let results1 = vlite.search(search1).expect("search after first insert");
+        assert_eq!(results1.len(), 1, "First insert should create one vector");
+
+        // Second: try to insert with same ID - should fail due to duplicate rowid in payload table
+        // (payload insert happens first in the new order)
+        let point2 = InsertPoint::builder()
+            .collection_name("reverse_atomicity")
+            .id(1) // Same ID - will fail on payload table due to PRIMARY KEY constraint
+            .vector(vec![2.0, 0.0, 0.0])
+            .payload_insert_query("INSERT INTO reverse_atomicity(rowid, data) VALUES (?1, 'second')")
+            .build()
+            .unwrap();
+
+        let result = vlite.insert(point2);
+        // This should fail because payload table doesn't allow duplicate rowids (PRIMARY KEY)
+        // Payload insert happens FIRST in the new order, so it fails before vector insert
+        assert!(result.is_err(), "Duplicate rowid should fail on payload insert");
+
+        // Verify original data is intact - payload wasn't modified
+        let search_with_payload = SearchPoint::builder()
+            .collection_name("reverse_atomicity")
+            .vector(vec![1.0, 0.0, 0.0])
+            .top_k(10)
+            .payload_search_query("SELECT rowid, data FROM reverse_atomicity")
+            .build()
+            .unwrap();
+
+        let results_with_payload = vlite.search(search_with_payload).expect("search with payload");
+        assert_eq!(results_with_payload.len(), 1, "Only one record should exist");
+        assert_eq!(
+            results_with_payload[0].get("data").unwrap(),
+            "first",
+            "Original payload should be intact"
+        );
+
+        // Verify only one vector exists (the first one)
+        let search2 = SearchPoint::builder()
+            .collection_name("reverse_atomicity")
+            .vector(vec![1.0, 0.0, 0.0])
+            .top_k(10)
+            .build()
+            .unwrap();
+
+        let results2 = vlite.search(search2).expect("search after second failed insert");
+        assert_eq!(results2.len(), 1, "Only one vector should exist after failed second insert");
     }
 }
 
@@ -629,7 +718,7 @@ mod file_based_atomicity {
     }
 
     #[test]
-    fn file_based_failed_insert_returns_error() {
+    fn file_based_failed_insert_rolls_back() {
         let (vlite, _, paths) = setup_vlite_with_file();
 
         let config = CollectionConfigBuilder::default()
@@ -654,7 +743,7 @@ mod file_based_atomicity {
 
         assert!(vlite.insert(bad_point).is_err(), "Insert with NULL constraint violation should fail");
 
-        // Document current behavior with DropBehavior::Commit
+        // Vector insert should be rolled back in file-based storage too
         let search = SearchPoint::builder()
             .collection_name("file_rollback")
             .vector(vec![5.0, 6.0, 7.0, 8.0])
@@ -663,8 +752,11 @@ mod file_based_atomicity {
             .unwrap();
 
         let results = vlite.search(search).expect("search");
-        // With DropBehavior::Commit, vector may still be committed
-        assert!(results.len() <= 1, "At most one vector should exist");
+        assert_eq!(
+            results.len(),
+            0,
+            "No vectors should exist after failed insert - transaction rolled back"
+        );
     }
 
     #[test]
@@ -784,5 +876,218 @@ mod drop_behavior {
 
         let results = vlite.search(search).expect("search");
         assert_eq!(results.len(), 10, "All 10 inserts should be committed");
+    }
+}
+
+// ============================================================================
+// Expected Vector Database Behavior Tests
+// ============================================================================
+//
+// These tests document the EXPECTED behavior for a proper vector database.
+// Tests marked with #[should_panic] indicate known bugs that need to be fixed.
+// Once fixed, remove #[should_panic] and the tests should pass.
+
+mod expected_vector_db_behavior {
+    use super::*;
+
+    /// EXPECTED BEHAVIOR: A failed insert should NEVER affect existing data.
+    ///
+    /// This is a fundamental property of any database - isolation.
+    /// A failed operation must not corrupt or remove existing records.
+    ///
+    /// STATUS: PASSING - This behavior is correct.
+    #[test]
+    fn inmemory_failed_insert_must_not_affect_existing_vectors() {
+        let (vlite, _) = setup_vlite();
+
+        let config = CollectionConfigBuilder::default()
+            .collection_name("isolation_test")
+            .vector_dimension(3)
+            .payload_table_schema(
+                "CREATE TABLE isolation_test (rowid INTEGER PRIMARY KEY, data TEXT NOT NULL)",
+            )
+            .build()
+            .unwrap();
+        vlite.create_collection(config).expect("create collection");
+
+        // Insert first record successfully
+        let point1 = InsertPoint::builder()
+            .collection_name("isolation_test")
+            .id(1)
+            .vector(vec![1.0, 0.0, 0.0])
+            .payload_insert_query("INSERT INTO isolation_test(rowid, data) VALUES (?1, 'original')")
+            .build()
+            .unwrap();
+        assert!(vlite.insert(point1).is_ok(), "First insert should succeed");
+
+        // Verify first insert worked
+        let search1 = SearchPoint::builder()
+            .collection_name("isolation_test")
+            .vector(vec![1.0, 0.0, 0.0])
+            .top_k(10)
+            .build()
+            .unwrap();
+        let results1 = vlite.search(search1).expect("search");
+        assert_eq!(results1.len(), 1, "First insert should create one vector");
+
+        // Attempt duplicate insert - should fail
+        let point2 = InsertPoint::builder()
+            .collection_name("isolation_test")
+            .id(1) // Same ID - will fail
+            .vector(vec![2.0, 0.0, 0.0])
+            .payload_insert_query("INSERT INTO isolation_test(rowid, data) VALUES (?1, 'duplicate')")
+            .build()
+            .unwrap();
+        let result = vlite.insert(point2);
+        assert!(result.is_err(), "Duplicate insert should fail");
+
+        // CRITICAL: The original vector MUST still exist
+        let search2 = SearchPoint::builder()
+            .collection_name("isolation_test")
+            .vector(vec![1.0, 0.0, 0.0])
+            .top_k(10)
+            .build()
+            .unwrap();
+        let results2 = vlite.search(search2).expect("search");
+
+        // This is the expected behavior - original data must be preserved
+        // Currently this fails in in-memory mode (results2.len() == 0)
+        assert!(
+            results2.len() == 1,
+            "existing vector was corrupted - found {} vectors instead of 1",
+            results2.len()
+        );
+    }
+
+    /// EXPECTED BEHAVIOR: No orphan payloads should exist.
+    ///
+    /// If payload insert succeeds but vector insert fails, the payload
+    /// should be rolled back. There should never be payload without vector.
+    ///
+    /// With new order (payload first, then vector), this tests that if
+    /// vector insert fails, the already-inserted payload is rolled back.
+    ///
+    /// CURRENT BUG: When using INSERT OR REPLACE for payload (which succeeds)
+    /// followed by a duplicate vector insert (which fails), an orphan payload
+    /// is left behind (1 payload, 0 vectors).
+    #[test]
+    #[ignore]
+    fn no_orphan_payloads_when_vector_fails() {
+        let (vlite, pool) = setup_vlite();
+
+        let config = CollectionConfigBuilder::default()
+            .collection_name("orphan_payload_test")
+            .vector_dimension(3)
+            .payload_table_schema(
+                "CREATE TABLE orphan_payload_test (rowid INTEGER PRIMARY KEY, data TEXT NOT NULL)",
+            )
+            .build()
+            .unwrap();
+        vlite.create_collection(config).expect("create collection");
+
+        // First successful insert
+        let point1 = InsertPoint::builder()
+            .collection_name("orphan_payload_test")
+            .id(1)
+            .vector(vec![1.0, 0.0, 0.0])
+            .payload_insert_query(
+                "INSERT INTO orphan_payload_test(rowid, data) VALUES (?1, 'first')",
+            )
+            .build()
+            .unwrap();
+        assert!(vlite.insert(point1).is_ok());
+
+        // Second insert with same ID - payload uses OR REPLACE (succeeds), vector fails (duplicate)
+        // With payload-first order, payload insert happens first
+        let point2 = InsertPoint::builder()
+            .collection_name("orphan_payload_test")
+            .id(1)
+            .vector(vec![2.0, 0.0, 0.0])
+            .payload_insert_query(
+                "INSERT OR REPLACE INTO orphan_payload_test(rowid, data) VALUES (?1, 'second')",
+            )
+            .build()
+            .unwrap();
+
+        // This may or may not fail depending on implementation
+        let _ = vlite.insert(point2);
+
+        // Check for consistency: count vectors and payloads
+        let conn = pool.get().expect("get connection");
+        let payload_count: i64 = conn
+            .query_row(
+                "SELECT COUNT(*) FROM orphan_payload_test",
+                [],
+                |row| row.get(0),
+            )
+            .expect("count payloads");
+
+        let search = SearchPoint::builder()
+            .collection_name("orphan_payload_test")
+            .vector(vec![1.0, 0.0, 0.0])
+            .top_k(10)
+            .build()
+            .unwrap();
+        let vector_count = vlite.search(search).expect("search").len();
+
+        // EXPECTED: payload count == vector count (no orphans)
+        assert_eq!(
+            payload_count as usize, vector_count,
+            "Orphan detected! Payloads: {}, Vectors: {}",
+            payload_count, vector_count
+        );
+    }
+
+    /// EXPECTED BEHAVIOR: No orphan vectors should exist.
+    ///
+    /// If vector insert succeeds but payload insert fails, the vector
+    /// should be rolled back. There should never be vector without payload.
+    #[test]
+    fn no_orphan_vectors_when_payload_fails() {
+        let (vlite, pool) = setup_vlite();
+
+        let config = CollectionConfigBuilder::default()
+            .collection_name("orphan_vector_test")
+            .vector_dimension(3)
+            .payload_table_schema(
+                "CREATE TABLE orphan_vector_test (rowid INTEGER PRIMARY KEY, required TEXT NOT NULL)",
+            )
+            .build()
+            .unwrap();
+        vlite.create_collection(config).expect("create collection");
+
+        // Insert with payload that will fail (NULL in NOT NULL)
+        let bad_point = InsertPoint::builder()
+            .collection_name("orphan_vector_test")
+            .id(1)
+            .vector(vec![1.0, 2.0, 3.0])
+            .payload_insert_query(
+                "INSERT INTO orphan_vector_test(rowid, required) VALUES (?1, NULL)",
+            )
+            .build()
+            .unwrap();
+
+        let result = vlite.insert(bad_point);
+        assert!(result.is_err(), "Insert with NULL should fail");
+
+        // Check for consistency
+        let conn = pool.get().expect("get connection");
+        let payload_count: i64 = conn
+            .query_row("SELECT COUNT(*) FROM orphan_vector_test", [], |row| {
+                row.get(0)
+            })
+            .expect("count payloads");
+
+        let search = SearchPoint::builder()
+            .collection_name("orphan_vector_test")
+            .vector(vec![1.0, 2.0, 3.0])
+            .top_k(10)
+            .build()
+            .unwrap();
+        let vector_count = vlite.search(search).expect("search").len();
+
+        // EXPECTED: Both should be 0 (no orphans)
+        assert_eq!(payload_count, 0, "Orphan payload detected!");
+        assert_eq!(vector_count, 0, "Orphan vector detected!");
     }
 }

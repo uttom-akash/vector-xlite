@@ -41,7 +41,12 @@ impl CustomizeConnection<Connection, rusqlite::Error> for SqliteConnectionCustom
         // Set busy timeout for better concurrent access handling
         // This makes SQLite wait and retry instead of immediately returning SQLITE_BUSY
         conn.busy_timeout(std::time::Duration::from_millis(self.busy_timeout_ms as u64))?;
+        // Enable WAL mode
+        conn.pragma_update(None, "journal_mode", "WAL")?;
 
+        // Recommended for WAL
+        conn.pragma_update(None, "synchronous", "NORMAL")?;
+        
         // Load the vector extension
         load_sqlite_vector_extension(conn).map_err(|e| {
             rusqlite::Error::SqliteFailure(rusqlite::ffi::Error::new(1), Some(e.to_string()))

@@ -405,7 +405,7 @@ mod mixed_workload {
     }
 
     #[test]
-    #[ignore]
+    
     fn stress_test_interleaved_operations() {
         let (vlite, _, paths) = setup_vlite_with_pool_size(10);
 
@@ -470,7 +470,7 @@ mod connection_pool {
     use super::*;
 
     #[test]
-    #[ignore]
+    
     fn pool_exhaustion_handling() {
         // Create a pool with very limited connections
         let (vlite, _, paths) = setup_vlite_with_pool_size(2);
