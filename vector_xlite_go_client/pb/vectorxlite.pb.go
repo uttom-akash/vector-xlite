@@ -21,6 +21,59 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// Type of file in the snapshot
+type SnapshotFileTypePB int32
+
+const (
+	SnapshotFileTypePB_SNAPSHOT_FILE_TYPE_UNKNOWN    SnapshotFileTypePB = 0
+	SnapshotFileTypePB_SNAPSHOT_FILE_TYPE_SQLITE_DB  SnapshotFileTypePB = 1
+	SnapshotFileTypePB_SNAPSHOT_FILE_TYPE_HNSW_INDEX SnapshotFileTypePB = 2
+	SnapshotFileTypePB_SNAPSHOT_FILE_TYPE_WAL        SnapshotFileTypePB = 3
+)
+
+// Enum value maps for SnapshotFileTypePB.
+var (
+	SnapshotFileTypePB_name = map[int32]string{
+		0: "SNAPSHOT_FILE_TYPE_UNKNOWN",
+		1: "SNAPSHOT_FILE_TYPE_SQLITE_DB",
+		2: "SNAPSHOT_FILE_TYPE_HNSW_INDEX",
+		3: "SNAPSHOT_FILE_TYPE_WAL",
+	}
+	SnapshotFileTypePB_value = map[string]int32{
+		"SNAPSHOT_FILE_TYPE_UNKNOWN":    0,
+		"SNAPSHOT_FILE_TYPE_SQLITE_DB":  1,
+		"SNAPSHOT_FILE_TYPE_HNSW_INDEX": 2,
+		"SNAPSHOT_FILE_TYPE_WAL":        3,
+	}
+)
+
+func (x SnapshotFileTypePB) Enum() *SnapshotFileTypePB {
+	p := new(SnapshotFileTypePB)
+	*p = x
+	return p
+}
+
+func (x SnapshotFileTypePB) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (SnapshotFileTypePB) Descriptor() protoreflect.EnumDescriptor {
+	return file_vectorxlite_proto_enumTypes[0].Descriptor()
+}
+
+func (SnapshotFileTypePB) Type() protoreflect.EnumType {
+	return &file_vectorxlite_proto_enumTypes[0]
+}
+
+func (x SnapshotFileTypePB) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use SnapshotFileTypePB.Descriptor instead.
+func (SnapshotFileTypePB) EnumDescriptor() ([]byte, []int) {
+	return file_vectorxlite_proto_rawDescGZIP(), []int{0}
+}
+
 type EmptyPB struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
@@ -425,6 +478,453 @@ func (x *SearchResponsePB) GetResults() []*SearchResultItemPB {
 	return nil
 }
 
+// Request to export a snapshot
+type ExportSnapshotRequestPB struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Optional: specify chunk size in bytes (default: 64KB)
+	ChunkSize uint32 `protobuf:"varint,1,opt,name=chunk_size,json=chunkSize,proto3" json:"chunk_size,omitempty"`
+	// Optional: include index files in snapshot (default: true)
+	IncludeIndexFiles bool `protobuf:"varint,2,opt,name=include_index_files,json=includeIndexFiles,proto3" json:"include_index_files,omitempty"`
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
+}
+
+func (x *ExportSnapshotRequestPB) Reset() {
+	*x = ExportSnapshotRequestPB{}
+	mi := &file_vectorxlite_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ExportSnapshotRequestPB) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ExportSnapshotRequestPB) ProtoMessage() {}
+
+func (x *ExportSnapshotRequestPB) ProtoReflect() protoreflect.Message {
+	mi := &file_vectorxlite_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ExportSnapshotRequestPB.ProtoReflect.Descriptor instead.
+func (*ExportSnapshotRequestPB) Descriptor() ([]byte, []int) {
+	return file_vectorxlite_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *ExportSnapshotRequestPB) GetChunkSize() uint32 {
+	if x != nil {
+		return x.ChunkSize
+	}
+	return 0
+}
+
+func (x *ExportSnapshotRequestPB) GetIncludeIndexFiles() bool {
+	if x != nil {
+		return x.IncludeIndexFiles
+	}
+	return false
+}
+
+// A chunk of snapshot data streamed during export/import
+type SnapshotChunkPB struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Metadata about the snapshot (sent in first chunk only)
+	Metadata *SnapshotMetadataPB `protobuf:"bytes,1,opt,name=metadata,proto3" json:"metadata,omitempty"`
+	// File being transferred
+	FileChunk *SnapshotFilePB `protobuf:"bytes,2,opt,name=file_chunk,json=fileChunk,proto3" json:"file_chunk,omitempty"`
+	// Sequence number for ordering chunks
+	Sequence uint64 `protobuf:"varint,3,opt,name=sequence,proto3" json:"sequence,omitempty"`
+	// Whether this is the final chunk
+	IsFinal       bool `protobuf:"varint,4,opt,name=is_final,json=isFinal,proto3" json:"is_final,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SnapshotChunkPB) Reset() {
+	*x = SnapshotChunkPB{}
+	mi := &file_vectorxlite_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SnapshotChunkPB) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SnapshotChunkPB) ProtoMessage() {}
+
+func (x *SnapshotChunkPB) ProtoReflect() protoreflect.Message {
+	mi := &file_vectorxlite_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SnapshotChunkPB.ProtoReflect.Descriptor instead.
+func (*SnapshotChunkPB) Descriptor() ([]byte, []int) {
+	return file_vectorxlite_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *SnapshotChunkPB) GetMetadata() *SnapshotMetadataPB {
+	if x != nil {
+		return x.Metadata
+	}
+	return nil
+}
+
+func (x *SnapshotChunkPB) GetFileChunk() *SnapshotFilePB {
+	if x != nil {
+		return x.FileChunk
+	}
+	return nil
+}
+
+func (x *SnapshotChunkPB) GetSequence() uint64 {
+	if x != nil {
+		return x.Sequence
+	}
+	return 0
+}
+
+func (x *SnapshotChunkPB) GetIsFinal() bool {
+	if x != nil {
+		return x.IsFinal
+	}
+	return false
+}
+
+// Metadata about the entire snapshot
+type SnapshotMetadataPB struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Unique identifier for this snapshot
+	SnapshotId string `protobuf:"bytes,1,opt,name=snapshot_id,json=snapshotId,proto3" json:"snapshot_id,omitempty"`
+	// Timestamp when snapshot was created (Unix millis)
+	CreatedAt int64 `protobuf:"varint,2,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	// Total size of all files in bytes
+	TotalSize uint64 `protobuf:"varint,3,opt,name=total_size,json=totalSize,proto3" json:"total_size,omitempty"`
+	// List of files included in the snapshot
+	Files []*SnapshotFileInfoPB `protobuf:"bytes,4,rep,name=files,proto3" json:"files,omitempty"`
+	// Version for compatibility checking
+	Version uint32 `protobuf:"varint,5,opt,name=version,proto3" json:"version,omitempty"`
+	// Checksum of entire snapshot (SHA-256)
+	Checksum      string `protobuf:"bytes,6,opt,name=checksum,proto3" json:"checksum,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SnapshotMetadataPB) Reset() {
+	*x = SnapshotMetadataPB{}
+	mi := &file_vectorxlite_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SnapshotMetadataPB) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SnapshotMetadataPB) ProtoMessage() {}
+
+func (x *SnapshotMetadataPB) ProtoReflect() protoreflect.Message {
+	mi := &file_vectorxlite_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SnapshotMetadataPB.ProtoReflect.Descriptor instead.
+func (*SnapshotMetadataPB) Descriptor() ([]byte, []int) {
+	return file_vectorxlite_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *SnapshotMetadataPB) GetSnapshotId() string {
+	if x != nil {
+		return x.SnapshotId
+	}
+	return ""
+}
+
+func (x *SnapshotMetadataPB) GetCreatedAt() int64 {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return 0
+}
+
+func (x *SnapshotMetadataPB) GetTotalSize() uint64 {
+	if x != nil {
+		return x.TotalSize
+	}
+	return 0
+}
+
+func (x *SnapshotMetadataPB) GetFiles() []*SnapshotFileInfoPB {
+	if x != nil {
+		return x.Files
+	}
+	return nil
+}
+
+func (x *SnapshotMetadataPB) GetVersion() uint32 {
+	if x != nil {
+		return x.Version
+	}
+	return 0
+}
+
+func (x *SnapshotMetadataPB) GetChecksum() string {
+	if x != nil {
+		return x.Checksum
+	}
+	return ""
+}
+
+// Information about a single file in the snapshot
+type SnapshotFileInfoPB struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Relative path/name of the file
+	FileName string `protobuf:"bytes,1,opt,name=file_name,json=fileName,proto3" json:"file_name,omitempty"`
+	// Type of file (database, index, etc.)
+	FileType SnapshotFileTypePB `protobuf:"varint,2,opt,name=file_type,json=fileType,proto3,enum=vectorxlite_pb.SnapshotFileTypePB" json:"file_type,omitempty"`
+	// Size of this file in bytes
+	FileSize uint64 `protobuf:"varint,3,opt,name=file_size,json=fileSize,proto3" json:"file_size,omitempty"`
+	// Checksum of this file (SHA-256)
+	Checksum      string `protobuf:"bytes,4,opt,name=checksum,proto3" json:"checksum,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SnapshotFileInfoPB) Reset() {
+	*x = SnapshotFileInfoPB{}
+	mi := &file_vectorxlite_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SnapshotFileInfoPB) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SnapshotFileInfoPB) ProtoMessage() {}
+
+func (x *SnapshotFileInfoPB) ProtoReflect() protoreflect.Message {
+	mi := &file_vectorxlite_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SnapshotFileInfoPB.ProtoReflect.Descriptor instead.
+func (*SnapshotFileInfoPB) Descriptor() ([]byte, []int) {
+	return file_vectorxlite_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *SnapshotFileInfoPB) GetFileName() string {
+	if x != nil {
+		return x.FileName
+	}
+	return ""
+}
+
+func (x *SnapshotFileInfoPB) GetFileType() SnapshotFileTypePB {
+	if x != nil {
+		return x.FileType
+	}
+	return SnapshotFileTypePB_SNAPSHOT_FILE_TYPE_UNKNOWN
+}
+
+func (x *SnapshotFileInfoPB) GetFileSize() uint64 {
+	if x != nil {
+		return x.FileSize
+	}
+	return 0
+}
+
+func (x *SnapshotFileInfoPB) GetChecksum() string {
+	if x != nil {
+		return x.Checksum
+	}
+	return ""
+}
+
+// A chunk of file data
+type SnapshotFilePB struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Name of the file this chunk belongs to
+	FileName string `protobuf:"bytes,1,opt,name=file_name,json=fileName,proto3" json:"file_name,omitempty"`
+	// Offset within the file
+	Offset uint64 `protobuf:"varint,2,opt,name=offset,proto3" json:"offset,omitempty"`
+	// The actual data
+	Data []byte `protobuf:"bytes,3,opt,name=data,proto3" json:"data,omitempty"`
+	// Whether this is the last chunk for this file
+	IsLastChunk   bool `protobuf:"varint,4,opt,name=is_last_chunk,json=isLastChunk,proto3" json:"is_last_chunk,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SnapshotFilePB) Reset() {
+	*x = SnapshotFilePB{}
+	mi := &file_vectorxlite_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SnapshotFilePB) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SnapshotFilePB) ProtoMessage() {}
+
+func (x *SnapshotFilePB) ProtoReflect() protoreflect.Message {
+	mi := &file_vectorxlite_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SnapshotFilePB.ProtoReflect.Descriptor instead.
+func (*SnapshotFilePB) Descriptor() ([]byte, []int) {
+	return file_vectorxlite_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *SnapshotFilePB) GetFileName() string {
+	if x != nil {
+		return x.FileName
+	}
+	return ""
+}
+
+func (x *SnapshotFilePB) GetOffset() uint64 {
+	if x != nil {
+		return x.Offset
+	}
+	return 0
+}
+
+func (x *SnapshotFilePB) GetData() []byte {
+	if x != nil {
+		return x.Data
+	}
+	return nil
+}
+
+func (x *SnapshotFilePB) GetIsLastChunk() bool {
+	if x != nil {
+		return x.IsLastChunk
+	}
+	return false
+}
+
+// Response after importing a snapshot
+type ImportSnapshotResponsePB struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Whether the import was successful
+	Success bool `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	// Error message if failed
+	ErrorMessage string `protobuf:"bytes,2,opt,name=error_message,json=errorMessage,proto3" json:"error_message,omitempty"`
+	// Snapshot ID that was imported
+	SnapshotId string `protobuf:"bytes,3,opt,name=snapshot_id,json=snapshotId,proto3" json:"snapshot_id,omitempty"`
+	// Number of bytes restored
+	BytesRestored uint64 `protobuf:"varint,4,opt,name=bytes_restored,json=bytesRestored,proto3" json:"bytes_restored,omitempty"`
+	// Number of files restored
+	FilesRestored uint32 `protobuf:"varint,5,opt,name=files_restored,json=filesRestored,proto3" json:"files_restored,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ImportSnapshotResponsePB) Reset() {
+	*x = ImportSnapshotResponsePB{}
+	mi := &file_vectorxlite_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ImportSnapshotResponsePB) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ImportSnapshotResponsePB) ProtoMessage() {}
+
+func (x *ImportSnapshotResponsePB) ProtoReflect() protoreflect.Message {
+	mi := &file_vectorxlite_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ImportSnapshotResponsePB.ProtoReflect.Descriptor instead.
+func (*ImportSnapshotResponsePB) Descriptor() ([]byte, []int) {
+	return file_vectorxlite_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *ImportSnapshotResponsePB) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+func (x *ImportSnapshotResponsePB) GetErrorMessage() string {
+	if x != nil {
+		return x.ErrorMessage
+	}
+	return ""
+}
+
+func (x *ImportSnapshotResponsePB) GetSnapshotId() string {
+	if x != nil {
+		return x.SnapshotId
+	}
+	return ""
+}
+
+func (x *ImportSnapshotResponsePB) GetBytesRestored() uint64 {
+	if x != nil {
+		return x.BytesRestored
+	}
+	return 0
+}
+
+func (x *ImportSnapshotResponsePB) GetFilesRestored() uint32 {
+	if x != nil {
+		return x.FilesRestored
+	}
+	return 0
+}
+
 var File_vectorxlite_proto protoreflect.FileDescriptor
 
 const file_vectorxlite_proto_rawDesc = "" +
@@ -456,11 +956,55 @@ const file_vectorxlite_proto_rawDesc = "" +
 	"\bdistance\x18\x02 \x01(\x02R\bdistance\x124\n" +
 	"\apayload\x18\x03 \x03(\v2\x1a.vectorxlite_pb.KeyValuePBR\apayload\"P\n" +
 	"\x10SearchResponsePB\x12<\n" +
-	"\aresults\x18\x01 \x03(\v2\".vectorxlite_pb.SearchResultItemPBR\aresults2\xed\x01\n" +
+	"\aresults\x18\x01 \x03(\v2\".vectorxlite_pb.SearchResultItemPBR\aresults\"h\n" +
+	"\x17ExportSnapshotRequestPB\x12\x1d\n" +
+	"\n" +
+	"chunk_size\x18\x01 \x01(\rR\tchunkSize\x12.\n" +
+	"\x13include_index_files\x18\x02 \x01(\bR\x11includeIndexFiles\"\xc7\x01\n" +
+	"\x0fSnapshotChunkPB\x12>\n" +
+	"\bmetadata\x18\x01 \x01(\v2\".vectorxlite_pb.SnapshotMetadataPBR\bmetadata\x12=\n" +
+	"\n" +
+	"file_chunk\x18\x02 \x01(\v2\x1e.vectorxlite_pb.SnapshotFilePBR\tfileChunk\x12\x1a\n" +
+	"\bsequence\x18\x03 \x01(\x04R\bsequence\x12\x19\n" +
+	"\bis_final\x18\x04 \x01(\bR\aisFinal\"\xe3\x01\n" +
+	"\x12SnapshotMetadataPB\x12\x1f\n" +
+	"\vsnapshot_id\x18\x01 \x01(\tR\n" +
+	"snapshotId\x12\x1d\n" +
+	"\n" +
+	"created_at\x18\x02 \x01(\x03R\tcreatedAt\x12\x1d\n" +
+	"\n" +
+	"total_size\x18\x03 \x01(\x04R\ttotalSize\x128\n" +
+	"\x05files\x18\x04 \x03(\v2\".vectorxlite_pb.SnapshotFileInfoPBR\x05files\x12\x18\n" +
+	"\aversion\x18\x05 \x01(\rR\aversion\x12\x1a\n" +
+	"\bchecksum\x18\x06 \x01(\tR\bchecksum\"\xab\x01\n" +
+	"\x12SnapshotFileInfoPB\x12\x1b\n" +
+	"\tfile_name\x18\x01 \x01(\tR\bfileName\x12?\n" +
+	"\tfile_type\x18\x02 \x01(\x0e2\".vectorxlite_pb.SnapshotFileTypePBR\bfileType\x12\x1b\n" +
+	"\tfile_size\x18\x03 \x01(\x04R\bfileSize\x12\x1a\n" +
+	"\bchecksum\x18\x04 \x01(\tR\bchecksum\"}\n" +
+	"\x0eSnapshotFilePB\x12\x1b\n" +
+	"\tfile_name\x18\x01 \x01(\tR\bfileName\x12\x16\n" +
+	"\x06offset\x18\x02 \x01(\x04R\x06offset\x12\x12\n" +
+	"\x04data\x18\x03 \x01(\fR\x04data\x12\"\n" +
+	"\ris_last_chunk\x18\x04 \x01(\bR\visLastChunk\"\xc8\x01\n" +
+	"\x18ImportSnapshotResponsePB\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12#\n" +
+	"\rerror_message\x18\x02 \x01(\tR\ferrorMessage\x12\x1f\n" +
+	"\vsnapshot_id\x18\x03 \x01(\tR\n" +
+	"snapshotId\x12%\n" +
+	"\x0ebytes_restored\x18\x04 \x01(\x04R\rbytesRestored\x12%\n" +
+	"\x0efiles_restored\x18\x05 \x01(\rR\rfilesRestored*\x95\x01\n" +
+	"\x12SnapshotFileTypePB\x12\x1e\n" +
+	"\x1aSNAPSHOT_FILE_TYPE_UNKNOWN\x10\x00\x12 \n" +
+	"\x1cSNAPSHOT_FILE_TYPE_SQLITE_DB\x10\x01\x12!\n" +
+	"\x1dSNAPSHOT_FILE_TYPE_HNSW_INDEX\x10\x02\x12\x1a\n" +
+	"\x16SNAPSHOT_FILE_TYPE_WAL\x10\x032\xaa\x03\n" +
 	"\rVectorXLitePB\x12O\n" +
 	"\x10CreateCollection\x12\".vectorxlite_pb.CollectionConfigPB\x1a\x17.vectorxlite_pb.EmptyPB\x12@\n" +
 	"\x06Insert\x12\x1d.vectorxlite_pb.InsertPointPB\x1a\x17.vectorxlite_pb.EmptyPB\x12I\n" +
-	"\x06Search\x12\x1d.vectorxlite_pb.SearchPointPB\x1a .vectorxlite_pb.SearchResponsePBBFZDgithub.com/uttom-akash/vector-xlite/go_grpc_client/pb;vectorxlite_pbb\x06proto3"
+	"\x06Search\x12\x1d.vectorxlite_pb.SearchPointPB\x1a .vectorxlite_pb.SearchResponsePB\x12\\\n" +
+	"\x0eExportSnapshot\x12'.vectorxlite_pb.ExportSnapshotRequestPB\x1a\x1f.vectorxlite_pb.SnapshotChunkPB0\x01\x12]\n" +
+	"\x0eImportSnapshot\x12\x1f.vectorxlite_pb.SnapshotChunkPB\x1a(.vectorxlite_pb.ImportSnapshotResponsePB(\x01BFZDgithub.com/uttom-akash/vector-xlite/go_grpc_client/pb;vectorxlite_pbb\x06proto3"
 
 var (
 	file_vectorxlite_proto_rawDescOnce sync.Once
@@ -474,30 +1018,46 @@ func file_vectorxlite_proto_rawDescGZIP() []byte {
 	return file_vectorxlite_proto_rawDescData
 }
 
-var file_vectorxlite_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
+var file_vectorxlite_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
+var file_vectorxlite_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
 var file_vectorxlite_proto_goTypes = []any{
-	(*EmptyPB)(nil),            // 0: vectorxlite_pb.EmptyPB
-	(*CollectionConfigPB)(nil), // 1: vectorxlite_pb.CollectionConfigPB
-	(*InsertPointPB)(nil),      // 2: vectorxlite_pb.InsertPointPB
-	(*SearchPointPB)(nil),      // 3: vectorxlite_pb.SearchPointPB
-	(*KeyValuePB)(nil),         // 4: vectorxlite_pb.KeyValuePB
-	(*SearchResultItemPB)(nil), // 5: vectorxlite_pb.SearchResultItemPB
-	(*SearchResponsePB)(nil),   // 6: vectorxlite_pb.SearchResponsePB
+	(SnapshotFileTypePB)(0),          // 0: vectorxlite_pb.SnapshotFileTypePB
+	(*EmptyPB)(nil),                  // 1: vectorxlite_pb.EmptyPB
+	(*CollectionConfigPB)(nil),       // 2: vectorxlite_pb.CollectionConfigPB
+	(*InsertPointPB)(nil),            // 3: vectorxlite_pb.InsertPointPB
+	(*SearchPointPB)(nil),            // 4: vectorxlite_pb.SearchPointPB
+	(*KeyValuePB)(nil),               // 5: vectorxlite_pb.KeyValuePB
+	(*SearchResultItemPB)(nil),       // 6: vectorxlite_pb.SearchResultItemPB
+	(*SearchResponsePB)(nil),         // 7: vectorxlite_pb.SearchResponsePB
+	(*ExportSnapshotRequestPB)(nil),  // 8: vectorxlite_pb.ExportSnapshotRequestPB
+	(*SnapshotChunkPB)(nil),          // 9: vectorxlite_pb.SnapshotChunkPB
+	(*SnapshotMetadataPB)(nil),       // 10: vectorxlite_pb.SnapshotMetadataPB
+	(*SnapshotFileInfoPB)(nil),       // 11: vectorxlite_pb.SnapshotFileInfoPB
+	(*SnapshotFilePB)(nil),           // 12: vectorxlite_pb.SnapshotFilePB
+	(*ImportSnapshotResponsePB)(nil), // 13: vectorxlite_pb.ImportSnapshotResponsePB
 }
 var file_vectorxlite_proto_depIdxs = []int32{
-	4, // 0: vectorxlite_pb.SearchResultItemPB.payload:type_name -> vectorxlite_pb.KeyValuePB
-	5, // 1: vectorxlite_pb.SearchResponsePB.results:type_name -> vectorxlite_pb.SearchResultItemPB
-	1, // 2: vectorxlite_pb.VectorXLitePB.CreateCollection:input_type -> vectorxlite_pb.CollectionConfigPB
-	2, // 3: vectorxlite_pb.VectorXLitePB.Insert:input_type -> vectorxlite_pb.InsertPointPB
-	3, // 4: vectorxlite_pb.VectorXLitePB.Search:input_type -> vectorxlite_pb.SearchPointPB
-	0, // 5: vectorxlite_pb.VectorXLitePB.CreateCollection:output_type -> vectorxlite_pb.EmptyPB
-	0, // 6: vectorxlite_pb.VectorXLitePB.Insert:output_type -> vectorxlite_pb.EmptyPB
-	6, // 7: vectorxlite_pb.VectorXLitePB.Search:output_type -> vectorxlite_pb.SearchResponsePB
-	5, // [5:8] is the sub-list for method output_type
-	2, // [2:5] is the sub-list for method input_type
-	2, // [2:2] is the sub-list for extension type_name
-	2, // [2:2] is the sub-list for extension extendee
-	0, // [0:2] is the sub-list for field type_name
+	5,  // 0: vectorxlite_pb.SearchResultItemPB.payload:type_name -> vectorxlite_pb.KeyValuePB
+	6,  // 1: vectorxlite_pb.SearchResponsePB.results:type_name -> vectorxlite_pb.SearchResultItemPB
+	10, // 2: vectorxlite_pb.SnapshotChunkPB.metadata:type_name -> vectorxlite_pb.SnapshotMetadataPB
+	12, // 3: vectorxlite_pb.SnapshotChunkPB.file_chunk:type_name -> vectorxlite_pb.SnapshotFilePB
+	11, // 4: vectorxlite_pb.SnapshotMetadataPB.files:type_name -> vectorxlite_pb.SnapshotFileInfoPB
+	0,  // 5: vectorxlite_pb.SnapshotFileInfoPB.file_type:type_name -> vectorxlite_pb.SnapshotFileTypePB
+	2,  // 6: vectorxlite_pb.VectorXLitePB.CreateCollection:input_type -> vectorxlite_pb.CollectionConfigPB
+	3,  // 7: vectorxlite_pb.VectorXLitePB.Insert:input_type -> vectorxlite_pb.InsertPointPB
+	4,  // 8: vectorxlite_pb.VectorXLitePB.Search:input_type -> vectorxlite_pb.SearchPointPB
+	8,  // 9: vectorxlite_pb.VectorXLitePB.ExportSnapshot:input_type -> vectorxlite_pb.ExportSnapshotRequestPB
+	9,  // 10: vectorxlite_pb.VectorXLitePB.ImportSnapshot:input_type -> vectorxlite_pb.SnapshotChunkPB
+	1,  // 11: vectorxlite_pb.VectorXLitePB.CreateCollection:output_type -> vectorxlite_pb.EmptyPB
+	1,  // 12: vectorxlite_pb.VectorXLitePB.Insert:output_type -> vectorxlite_pb.EmptyPB
+	7,  // 13: vectorxlite_pb.VectorXLitePB.Search:output_type -> vectorxlite_pb.SearchResponsePB
+	9,  // 14: vectorxlite_pb.VectorXLitePB.ExportSnapshot:output_type -> vectorxlite_pb.SnapshotChunkPB
+	13, // 15: vectorxlite_pb.VectorXLitePB.ImportSnapshot:output_type -> vectorxlite_pb.ImportSnapshotResponsePB
+	11, // [11:16] is the sub-list for method output_type
+	6,  // [6:11] is the sub-list for method input_type
+	6,  // [6:6] is the sub-list for extension type_name
+	6,  // [6:6] is the sub-list for extension extendee
+	0,  // [0:6] is the sub-list for field type_name
 }
 
 func init() { file_vectorxlite_proto_init() }
@@ -510,13 +1070,14 @@ func file_vectorxlite_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_vectorxlite_proto_rawDesc), len(file_vectorxlite_proto_rawDesc)),
-			NumEnums:      0,
-			NumMessages:   7,
+			NumEnums:      1,
+			NumMessages:   13,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
 		GoTypes:           file_vectorxlite_proto_goTypes,
 		DependencyIndexes: file_vectorxlite_proto_depIdxs,
+		EnumInfos:         file_vectorxlite_proto_enumTypes,
 		MessageInfos:      file_vectorxlite_proto_msgTypes,
 	}.Build()
 	File_vectorxlite_proto = out.File

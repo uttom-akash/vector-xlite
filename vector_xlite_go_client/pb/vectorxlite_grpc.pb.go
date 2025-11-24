@@ -22,6 +22,8 @@ const (
 	VectorXLitePB_CreateCollection_FullMethodName = "/vectorxlite_pb.VectorXLitePB/CreateCollection"
 	VectorXLitePB_Insert_FullMethodName           = "/vectorxlite_pb.VectorXLitePB/Insert"
 	VectorXLitePB_Search_FullMethodName           = "/vectorxlite_pb.VectorXLitePB/Search"
+	VectorXLitePB_ExportSnapshot_FullMethodName   = "/vectorxlite_pb.VectorXLitePB/ExportSnapshot"
+	VectorXLitePB_ImportSnapshot_FullMethodName   = "/vectorxlite_pb.VectorXLitePB/ImportSnapshot"
 )
 
 // VectorXLitePBClient is the client API for VectorXLitePB service.
@@ -31,6 +33,9 @@ type VectorXLitePBClient interface {
 	CreateCollection(ctx context.Context, in *CollectionConfigPB, opts ...grpc.CallOption) (*EmptyPB, error)
 	Insert(ctx context.Context, in *InsertPointPB, opts ...grpc.CallOption) (*EmptyPB, error)
 	Search(ctx context.Context, in *SearchPointPB, opts ...grpc.CallOption) (*SearchResponsePB, error)
+	// Snapshot operations for Raft FSM integration
+	ExportSnapshot(ctx context.Context, in *ExportSnapshotRequestPB, opts ...grpc.CallOption) (grpc.ServerStreamingClient[SnapshotChunkPB], error)
+	ImportSnapshot(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[SnapshotChunkPB, ImportSnapshotResponsePB], error)
 }
 
 type vectorXLitePBClient struct {
@@ -71,6 +76,38 @@ func (c *vectorXLitePBClient) Search(ctx context.Context, in *SearchPointPB, opt
 	return out, nil
 }
 
+func (c *vectorXLitePBClient) ExportSnapshot(ctx context.Context, in *ExportSnapshotRequestPB, opts ...grpc.CallOption) (grpc.ServerStreamingClient[SnapshotChunkPB], error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &VectorXLitePB_ServiceDesc.Streams[0], VectorXLitePB_ExportSnapshot_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &grpc.GenericClientStream[ExportSnapshotRequestPB, SnapshotChunkPB]{ClientStream: stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type VectorXLitePB_ExportSnapshotClient = grpc.ServerStreamingClient[SnapshotChunkPB]
+
+func (c *vectorXLitePBClient) ImportSnapshot(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[SnapshotChunkPB, ImportSnapshotResponsePB], error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &VectorXLitePB_ServiceDesc.Streams[1], VectorXLitePB_ImportSnapshot_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &grpc.GenericClientStream[SnapshotChunkPB, ImportSnapshotResponsePB]{ClientStream: stream}
+	return x, nil
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type VectorXLitePB_ImportSnapshotClient = grpc.ClientStreamingClient[SnapshotChunkPB, ImportSnapshotResponsePB]
+
 // VectorXLitePBServer is the server API for VectorXLitePB service.
 // All implementations must embed UnimplementedVectorXLitePBServer
 // for forward compatibility.
@@ -78,6 +115,9 @@ type VectorXLitePBServer interface {
 	CreateCollection(context.Context, *CollectionConfigPB) (*EmptyPB, error)
 	Insert(context.Context, *InsertPointPB) (*EmptyPB, error)
 	Search(context.Context, *SearchPointPB) (*SearchResponsePB, error)
+	// Snapshot operations for Raft FSM integration
+	ExportSnapshot(*ExportSnapshotRequestPB, grpc.ServerStreamingServer[SnapshotChunkPB]) error
+	ImportSnapshot(grpc.ClientStreamingServer[SnapshotChunkPB, ImportSnapshotResponsePB]) error
 	mustEmbedUnimplementedVectorXLitePBServer()
 }
 
@@ -96,6 +136,12 @@ func (UnimplementedVectorXLitePBServer) Insert(context.Context, *InsertPointPB) 
 }
 func (UnimplementedVectorXLitePBServer) Search(context.Context, *SearchPointPB) (*SearchResponsePB, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Search not implemented")
+}
+func (UnimplementedVectorXLitePBServer) ExportSnapshot(*ExportSnapshotRequestPB, grpc.ServerStreamingServer[SnapshotChunkPB]) error {
+	return status.Errorf(codes.Unimplemented, "method ExportSnapshot not implemented")
+}
+func (UnimplementedVectorXLitePBServer) ImportSnapshot(grpc.ClientStreamingServer[SnapshotChunkPB, ImportSnapshotResponsePB]) error {
+	return status.Errorf(codes.Unimplemented, "method ImportSnapshot not implemented")
 }
 func (UnimplementedVectorXLitePBServer) mustEmbedUnimplementedVectorXLitePBServer() {}
 func (UnimplementedVectorXLitePBServer) testEmbeddedByValue()                       {}
@@ -172,6 +218,24 @@ func _VectorXLitePB_Search_Handler(srv interface{}, ctx context.Context, dec fun
 	return interceptor(ctx, in, info, handler)
 }
 
+func _VectorXLitePB_ExportSnapshot_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(ExportSnapshotRequestPB)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(VectorXLitePBServer).ExportSnapshot(m, &grpc.GenericServerStream[ExportSnapshotRequestPB, SnapshotChunkPB]{ServerStream: stream})
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type VectorXLitePB_ExportSnapshotServer = grpc.ServerStreamingServer[SnapshotChunkPB]
+
+func _VectorXLitePB_ImportSnapshot_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(VectorXLitePBServer).ImportSnapshot(&grpc.GenericServerStream[SnapshotChunkPB, ImportSnapshotResponsePB]{ServerStream: stream})
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type VectorXLitePB_ImportSnapshotServer = grpc.ClientStreamingServer[SnapshotChunkPB, ImportSnapshotResponsePB]
+
 // VectorXLitePB_ServiceDesc is the grpc.ServiceDesc for VectorXLitePB service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -192,6 +256,17 @@ var VectorXLitePB_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _VectorXLitePB_Search_Handler,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "ExportSnapshot",
+			Handler:       _VectorXLitePB_ExportSnapshot_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "ImportSnapshot",
+			Handler:       _VectorXLitePB_ImportSnapshot_Handler,
+			ClientStreams: true,
+		},
+	},
 	Metadata: "vectorxlite.proto",
 }
