@@ -1,6 +1,6 @@
 [package]
 name = "vector_xlite"
-version = "1.1.0"
+version = "1.2.0"
 edition = "2024"
 authors = ["Uttom Akash <uttom.akash71@gmail.com>"]
 description = "VectorXLite: A fast and lightweight SQLite extension for vector search with payload support."
@@ -13,7 +13,7 @@ homepage = "https://github.com/uttom-akash/vector-xlite"
 documentation = "https://docs.rs/vector_xlite"
 
 [dependencies]
-rusqlite = { version = "0.37.0", features = ["load_extension" ]}
+rusqlite = { version = "0.37.0", features = ["load_extension", "backup"] }
 regex = "1.12.2"
 once_cell = "1.21.3"
 r2d2 = "0.8.10"

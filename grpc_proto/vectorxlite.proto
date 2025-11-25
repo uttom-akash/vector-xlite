@@ -9,6 +9,10 @@ service VectorXLitePB {
   rpc CreateCollection(CollectionConfigPB) returns (EmptyPB);
   rpc Insert(InsertPointPB) returns (EmptyPB);
   rpc Search(SearchPointPB) returns (SearchResponsePB);
+
+  // Snapshot operations for Raft FSM integration
+  rpc ExportSnapshot(ExportSnapshotRequestPB) returns (stream SnapshotChunkPB);
+  rpc ImportSnapshot(stream SnapshotChunkPB) returns (ImportSnapshotResponsePB);
 }
 
 message EmptyPB {}
@@ -48,4 +52,90 @@ message SearchResultItemPB {
 
 message SearchResponsePB {
   repeated SearchResultItemPB results = 1;
+}
+
+// ============================================================================
+// Snapshot Messages for Raft FSM Integration
+// ============================================================================
+
+// Request to export a snapshot
+message ExportSnapshotRequestPB {
+  // Optional: specify chunk size in bytes (default: 64KB)
+  uint32 chunk_size = 1;
+  // Optional: include index files in snapshot (default: true)
+  bool include_index_files = 2;
+}
+
+// A chunk of snapshot data streamed during export/import
+message SnapshotChunkPB {
+  // Metadata about the snapshot (sent in first chunk only)
+  SnapshotMetadataPB metadata = 1;
+  // File being transferred
+  SnapshotFilePB file_chunk = 2;
+  // Sequence number for ordering chunks
+  uint64 sequence = 3;
+  // Whether this is the final chunk
+  bool is_final = 4;
+}
+
+// Metadata about the entire snapshot
+message SnapshotMetadataPB {
+  // Unique identifier for this snapshot
+  string snapshot_id = 1;
+  // Timestamp when snapshot was created (Unix millis)
+  int64 created_at = 2;
+  // Total size of all files in bytes
+  uint64 total_size = 3;
+  // List of files included in the snapshot
+  repeated SnapshotFileInfoPB files = 4;
+  // Version for compatibility checking
+  uint32 version = 5;
+  // Checksum of entire snapshot (SHA-256)
+  string checksum = 6;
+}
+
+// Information about a single file in the snapshot
+message SnapshotFileInfoPB {
+  // Relative path/name of the file
+  string file_name = 1;
+  // Type of file (database, index, etc.)
+  SnapshotFileTypePB file_type = 2;
+  // Size of this file in bytes
+  uint64 file_size = 3;
+  // Checksum of this file (SHA-256)
+  string checksum = 4;
+}
+
+// Type of file in the snapshot
+enum SnapshotFileTypePB {
+  SNAPSHOT_FILE_TYPE_UNKNOWN = 0;
+  SNAPSHOT_FILE_TYPE_SQLITE_DB = 1;
+  SNAPSHOT_FILE_TYPE_HNSW_INDEX = 2;
+  SNAPSHOT_FILE_TYPE_WAL = 3;
+}
+
+// A chunk of file data
+message SnapshotFilePB {
+  // Name of the file this chunk belongs to
+  string file_name = 1;
+  // Offset within the file
+  uint64 offset = 2;
+  // The actual data
+  bytes data = 3;
+  // Whether this is the last chunk for this file
+  bool is_last_chunk = 4;
+}
+
+// Response after importing a snapshot
+message ImportSnapshotResponsePB {
+  // Whether the import was successful
+  bool success = 1;
+  // Error message if failed
+  string error_message = 2;
+  // Snapshot ID that was imported
+  string snapshot_id = 3;
+  // Number of bytes restored
+  uint64 bytes_restored = 4;
+  // Number of files restored
+  uint32 files_restored = 5;
 }
