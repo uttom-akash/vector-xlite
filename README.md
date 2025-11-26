@@ -443,7 +443,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - [Crates.io](https://crates.io/crates/vector_xlite)
 - [Documentation](https://docs.rs/vector_xlite)
-- [GitHub Repository](https://github.com/anthropics/vector-db-rs)
+- [GitHub Repository](https://github.com/uttom-akash/vector-xlite)
 
 ---
 

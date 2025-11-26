@@ -1,6 +1,6 @@
 [package]
 name = "vector_xlite"
-version = "1.2.0"
+version = "1.2.1"
 edition = "2024"
 authors = ["Uttom Akash <uttom.akash71@gmail.com>"]
 description = "VectorXLite: A fast and lightweight SQLite extension for vector search with payload support."
