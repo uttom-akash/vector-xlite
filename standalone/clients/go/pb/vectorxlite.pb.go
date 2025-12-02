@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.36.10
 // 	protoc        v3.21.12
-// source: vectorxlite.proto
+// source: vectorxlite/v1/vectorxlite.proto
 
 package vectorxlite_pb
 
@@ -58,11 +58,11 @@ func (x SnapshotFileTypePB) String() string {
 }
 
 func (SnapshotFileTypePB) Descriptor() protoreflect.EnumDescriptor {
-	return file_vectorxlite_proto_enumTypes[0].Descriptor()
+	return file_vectorxlite_v1_vectorxlite_proto_enumTypes[0].Descriptor()
 }
 
 func (SnapshotFileTypePB) Type() protoreflect.EnumType {
-	return &file_vectorxlite_proto_enumTypes[0]
+	return &file_vectorxlite_v1_vectorxlite_proto_enumTypes[0]
 }
 
 func (x SnapshotFileTypePB) Number() protoreflect.EnumNumber {
@@ -71,7 +71,7 @@ func (x SnapshotFileTypePB) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use SnapshotFileTypePB.Descriptor instead.
 func (SnapshotFileTypePB) EnumDescriptor() ([]byte, []int) {
-	return file_vectorxlite_proto_rawDescGZIP(), []int{0}
+	return file_vectorxlite_v1_vectorxlite_proto_rawDescGZIP(), []int{0}
 }
 
 type EmptyPB struct {
@@ -82,7 +82,7 @@ type EmptyPB struct {
 
 func (x *EmptyPB) Reset() {
 	*x = EmptyPB{}
-	mi := &file_vectorxlite_proto_msgTypes[0]
+	mi := &file_vectorxlite_v1_vectorxlite_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -94,7 +94,7 @@ func (x *EmptyPB) String() string {
 func (*EmptyPB) ProtoMessage() {}
 
 func (x *EmptyPB) ProtoReflect() protoreflect.Message {
-	mi := &file_vectorxlite_proto_msgTypes[0]
+	mi := &file_vectorxlite_v1_vectorxlite_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -107,7 +107,7 @@ func (x *EmptyPB) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use EmptyPB.ProtoReflect.Descriptor instead.
 func (*EmptyPB) Descriptor() ([]byte, []int) {
-	return file_vectorxlite_proto_rawDescGZIP(), []int{0}
+	return file_vectorxlite_v1_vectorxlite_proto_rawDescGZIP(), []int{0}
 }
 
 type CollectionConfigPB struct {
@@ -123,7 +123,7 @@ type CollectionConfigPB struct {
 
 func (x *CollectionConfigPB) Reset() {
 	*x = CollectionConfigPB{}
-	mi := &file_vectorxlite_proto_msgTypes[1]
+	mi := &file_vectorxlite_v1_vectorxlite_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -135,7 +135,7 @@ func (x *CollectionConfigPB) String() string {
 func (*CollectionConfigPB) ProtoMessage() {}
 
 func (x *CollectionConfigPB) ProtoReflect() protoreflect.Message {
-	mi := &file_vectorxlite_proto_msgTypes[1]
+	mi := &file_vectorxlite_v1_vectorxlite_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -148,7 +148,7 @@ func (x *CollectionConfigPB) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CollectionConfigPB.ProtoReflect.Descriptor instead.
 func (*CollectionConfigPB) Descriptor() ([]byte, []int) {
-	return file_vectorxlite_proto_rawDescGZIP(), []int{1}
+	return file_vectorxlite_v1_vectorxlite_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *CollectionConfigPB) GetCollectionName() string {
@@ -198,7 +198,7 @@ type InsertPointPB struct {
 
 func (x *InsertPointPB) Reset() {
 	*x = InsertPointPB{}
-	mi := &file_vectorxlite_proto_msgTypes[2]
+	mi := &file_vectorxlite_v1_vectorxlite_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -210,7 +210,7 @@ func (x *InsertPointPB) String() string {
 func (*InsertPointPB) ProtoMessage() {}
 
 func (x *InsertPointPB) ProtoReflect() protoreflect.Message {
-	mi := &file_vectorxlite_proto_msgTypes[2]
+	mi := &file_vectorxlite_v1_vectorxlite_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -223,7 +223,7 @@ func (x *InsertPointPB) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use InsertPointPB.ProtoReflect.Descriptor instead.
 func (*InsertPointPB) Descriptor() ([]byte, []int) {
-	return file_vectorxlite_proto_rawDescGZIP(), []int{2}
+	return file_vectorxlite_v1_vectorxlite_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *InsertPointPB) GetCollectionName() string {
@@ -266,7 +266,7 @@ type SearchPointPB struct {
 
 func (x *SearchPointPB) Reset() {
 	*x = SearchPointPB{}
-	mi := &file_vectorxlite_proto_msgTypes[3]
+	mi := &file_vectorxlite_v1_vectorxlite_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -278,7 +278,7 @@ func (x *SearchPointPB) String() string {
 func (*SearchPointPB) ProtoMessage() {}
 
 func (x *SearchPointPB) ProtoReflect() protoreflect.Message {
-	mi := &file_vectorxlite_proto_msgTypes[3]
+	mi := &file_vectorxlite_v1_vectorxlite_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -291,7 +291,7 @@ func (x *SearchPointPB) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SearchPointPB.ProtoReflect.Descriptor instead.
 func (*SearchPointPB) Descriptor() ([]byte, []int) {
-	return file_vectorxlite_proto_rawDescGZIP(), []int{3}
+	return file_vectorxlite_v1_vectorxlite_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *SearchPointPB) GetCollectionName() string {
@@ -332,7 +332,7 @@ type KeyValuePB struct {
 
 func (x *KeyValuePB) Reset() {
 	*x = KeyValuePB{}
-	mi := &file_vectorxlite_proto_msgTypes[4]
+	mi := &file_vectorxlite_v1_vectorxlite_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -344,7 +344,7 @@ func (x *KeyValuePB) String() string {
 func (*KeyValuePB) ProtoMessage() {}
 
 func (x *KeyValuePB) ProtoReflect() protoreflect.Message {
-	mi := &file_vectorxlite_proto_msgTypes[4]
+	mi := &file_vectorxlite_v1_vectorxlite_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -357,7 +357,7 @@ func (x *KeyValuePB) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use KeyValuePB.ProtoReflect.Descriptor instead.
 func (*KeyValuePB) Descriptor() ([]byte, []int) {
-	return file_vectorxlite_proto_rawDescGZIP(), []int{4}
+	return file_vectorxlite_v1_vectorxlite_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *KeyValuePB) GetKey() string {
@@ -385,7 +385,7 @@ type SearchResultItemPB struct {
 
 func (x *SearchResultItemPB) Reset() {
 	*x = SearchResultItemPB{}
-	mi := &file_vectorxlite_proto_msgTypes[5]
+	mi := &file_vectorxlite_v1_vectorxlite_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -397,7 +397,7 @@ func (x *SearchResultItemPB) String() string {
 func (*SearchResultItemPB) ProtoMessage() {}
 
 func (x *SearchResultItemPB) ProtoReflect() protoreflect.Message {
-	mi := &file_vectorxlite_proto_msgTypes[5]
+	mi := &file_vectorxlite_v1_vectorxlite_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -410,7 +410,7 @@ func (x *SearchResultItemPB) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SearchResultItemPB.ProtoReflect.Descriptor instead.
 func (*SearchResultItemPB) Descriptor() ([]byte, []int) {
-	return file_vectorxlite_proto_rawDescGZIP(), []int{5}
+	return file_vectorxlite_v1_vectorxlite_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *SearchResultItemPB) GetRowid() int64 {
@@ -443,7 +443,7 @@ type SearchResponsePB struct {
 
 func (x *SearchResponsePB) Reset() {
 	*x = SearchResponsePB{}
-	mi := &file_vectorxlite_proto_msgTypes[6]
+	mi := &file_vectorxlite_v1_vectorxlite_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -455,7 +455,7 @@ func (x *SearchResponsePB) String() string {
 func (*SearchResponsePB) ProtoMessage() {}
 
 func (x *SearchResponsePB) ProtoReflect() protoreflect.Message {
-	mi := &file_vectorxlite_proto_msgTypes[6]
+	mi := &file_vectorxlite_v1_vectorxlite_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -468,7 +468,7 @@ func (x *SearchResponsePB) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SearchResponsePB.ProtoReflect.Descriptor instead.
 func (*SearchResponsePB) Descriptor() ([]byte, []int) {
-	return file_vectorxlite_proto_rawDescGZIP(), []int{6}
+	return file_vectorxlite_v1_vectorxlite_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *SearchResponsePB) GetResults() []*SearchResultItemPB {
@@ -491,7 +491,7 @@ type ExportSnapshotRequestPB struct {
 
 func (x *ExportSnapshotRequestPB) Reset() {
 	*x = ExportSnapshotRequestPB{}
-	mi := &file_vectorxlite_proto_msgTypes[7]
+	mi := &file_vectorxlite_v1_vectorxlite_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -503,7 +503,7 @@ func (x *ExportSnapshotRequestPB) String() string {
 func (*ExportSnapshotRequestPB) ProtoMessage() {}
 
 func (x *ExportSnapshotRequestPB) ProtoReflect() protoreflect.Message {
-	mi := &file_vectorxlite_proto_msgTypes[7]
+	mi := &file_vectorxlite_v1_vectorxlite_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -516,7 +516,7 @@ func (x *ExportSnapshotRequestPB) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ExportSnapshotRequestPB.ProtoReflect.Descriptor instead.
 func (*ExportSnapshotRequestPB) Descriptor() ([]byte, []int) {
-	return file_vectorxlite_proto_rawDescGZIP(), []int{7}
+	return file_vectorxlite_v1_vectorxlite_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *ExportSnapshotRequestPB) GetChunkSize() uint32 {
@@ -550,7 +550,7 @@ type SnapshotChunkPB struct {
 
 func (x *SnapshotChunkPB) Reset() {
 	*x = SnapshotChunkPB{}
-	mi := &file_vectorxlite_proto_msgTypes[8]
+	mi := &file_vectorxlite_v1_vectorxlite_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -562,7 +562,7 @@ func (x *SnapshotChunkPB) String() string {
 func (*SnapshotChunkPB) ProtoMessage() {}
 
 func (x *SnapshotChunkPB) ProtoReflect() protoreflect.Message {
-	mi := &file_vectorxlite_proto_msgTypes[8]
+	mi := &file_vectorxlite_v1_vectorxlite_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -575,7 +575,7 @@ func (x *SnapshotChunkPB) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SnapshotChunkPB.ProtoReflect.Descriptor instead.
 func (*SnapshotChunkPB) Descriptor() ([]byte, []int) {
-	return file_vectorxlite_proto_rawDescGZIP(), []int{8}
+	return file_vectorxlite_v1_vectorxlite_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *SnapshotChunkPB) GetMetadata() *SnapshotMetadataPB {
@@ -627,7 +627,7 @@ type SnapshotMetadataPB struct {
 
 func (x *SnapshotMetadataPB) Reset() {
 	*x = SnapshotMetadataPB{}
-	mi := &file_vectorxlite_proto_msgTypes[9]
+	mi := &file_vectorxlite_v1_vectorxlite_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -639,7 +639,7 @@ func (x *SnapshotMetadataPB) String() string {
 func (*SnapshotMetadataPB) ProtoMessage() {}
 
 func (x *SnapshotMetadataPB) ProtoReflect() protoreflect.Message {
-	mi := &file_vectorxlite_proto_msgTypes[9]
+	mi := &file_vectorxlite_v1_vectorxlite_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -652,7 +652,7 @@ func (x *SnapshotMetadataPB) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SnapshotMetadataPB.ProtoReflect.Descriptor instead.
 func (*SnapshotMetadataPB) Descriptor() ([]byte, []int) {
-	return file_vectorxlite_proto_rawDescGZIP(), []int{9}
+	return file_vectorxlite_v1_vectorxlite_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *SnapshotMetadataPB) GetSnapshotId() string {
@@ -714,7 +714,7 @@ type SnapshotFileInfoPB struct {
 
 func (x *SnapshotFileInfoPB) Reset() {
 	*x = SnapshotFileInfoPB{}
-	mi := &file_vectorxlite_proto_msgTypes[10]
+	mi := &file_vectorxlite_v1_vectorxlite_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -726,7 +726,7 @@ func (x *SnapshotFileInfoPB) String() string {
 func (*SnapshotFileInfoPB) ProtoMessage() {}
 
 func (x *SnapshotFileInfoPB) ProtoReflect() protoreflect.Message {
-	mi := &file_vectorxlite_proto_msgTypes[10]
+	mi := &file_vectorxlite_v1_vectorxlite_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -739,7 +739,7 @@ func (x *SnapshotFileInfoPB) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SnapshotFileInfoPB.ProtoReflect.Descriptor instead.
 func (*SnapshotFileInfoPB) Descriptor() ([]byte, []int) {
-	return file_vectorxlite_proto_rawDescGZIP(), []int{10}
+	return file_vectorxlite_v1_vectorxlite_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *SnapshotFileInfoPB) GetFileName() string {
@@ -787,7 +787,7 @@ type SnapshotFilePB struct {
 
 func (x *SnapshotFilePB) Reset() {
 	*x = SnapshotFilePB{}
-	mi := &file_vectorxlite_proto_msgTypes[11]
+	mi := &file_vectorxlite_v1_vectorxlite_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -799,7 +799,7 @@ func (x *SnapshotFilePB) String() string {
 func (*SnapshotFilePB) ProtoMessage() {}
 
 func (x *SnapshotFilePB) ProtoReflect() protoreflect.Message {
-	mi := &file_vectorxlite_proto_msgTypes[11]
+	mi := &file_vectorxlite_v1_vectorxlite_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -812,7 +812,7 @@ func (x *SnapshotFilePB) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SnapshotFilePB.ProtoReflect.Descriptor instead.
 func (*SnapshotFilePB) Descriptor() ([]byte, []int) {
-	return file_vectorxlite_proto_rawDescGZIP(), []int{11}
+	return file_vectorxlite_v1_vectorxlite_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *SnapshotFilePB) GetFileName() string {
@@ -862,7 +862,7 @@ type ImportSnapshotResponsePB struct {
 
 func (x *ImportSnapshotResponsePB) Reset() {
 	*x = ImportSnapshotResponsePB{}
-	mi := &file_vectorxlite_proto_msgTypes[12]
+	mi := &file_vectorxlite_v1_vectorxlite_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -874,7 +874,7 @@ func (x *ImportSnapshotResponsePB) String() string {
 func (*ImportSnapshotResponsePB) ProtoMessage() {}
 
 func (x *ImportSnapshotResponsePB) ProtoReflect() protoreflect.Message {
-	mi := &file_vectorxlite_proto_msgTypes[12]
+	mi := &file_vectorxlite_v1_vectorxlite_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -887,7 +887,7 @@ func (x *ImportSnapshotResponsePB) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ImportSnapshotResponsePB.ProtoReflect.Descriptor instead.
 func (*ImportSnapshotResponsePB) Descriptor() ([]byte, []int) {
-	return file_vectorxlite_proto_rawDescGZIP(), []int{12}
+	return file_vectorxlite_v1_vectorxlite_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *ImportSnapshotResponsePB) GetSuccess() bool {
@@ -925,11 +925,11 @@ func (x *ImportSnapshotResponsePB) GetFilesRestored() uint32 {
 	return 0
 }
 
-var File_vectorxlite_proto protoreflect.FileDescriptor
+var File_vectorxlite_v1_vectorxlite_proto protoreflect.FileDescriptor
 
-const file_vectorxlite_proto_rawDesc = "" +
+const file_vectorxlite_v1_vectorxlite_proto_rawDesc = "" +
 	"\n" +
-	"\x11vectorxlite.proto\x12\x0evectorxlite_pb\"\t\n" +
+	" vectorxlite/v1/vectorxlite.proto\x12\x0evectorxlite_pb\"\t\n" +
 	"\aEmptyPB\"\xde\x01\n" +
 	"\x12CollectionConfigPB\x12'\n" +
 	"\x0fcollection_name\x18\x01 \x01(\tR\x0ecollectionName\x12\x1a\n" +
@@ -1007,20 +1007,20 @@ const file_vectorxlite_proto_rawDesc = "" +
 	"\x0eImportSnapshot\x12\x1f.vectorxlite_pb.SnapshotChunkPB\x1a(.vectorxlite_pb.ImportSnapshotResponsePB(\x01BFZDgithub.com/uttom-akash/vector-xlite/go_grpc_client/pb;vectorxlite_pbb\x06proto3"
 
 var (
-	file_vectorxlite_proto_rawDescOnce sync.Once
-	file_vectorxlite_proto_rawDescData []byte
+	file_vectorxlite_v1_vectorxlite_proto_rawDescOnce sync.Once
+	file_vectorxlite_v1_vectorxlite_proto_rawDescData []byte
 )
 
-func file_vectorxlite_proto_rawDescGZIP() []byte {
-	file_vectorxlite_proto_rawDescOnce.Do(func() {
-		file_vectorxlite_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_vectorxlite_proto_rawDesc), len(file_vectorxlite_proto_rawDesc)))
+func file_vectorxlite_v1_vectorxlite_proto_rawDescGZIP() []byte {
+	file_vectorxlite_v1_vectorxlite_proto_rawDescOnce.Do(func() {
+		file_vectorxlite_v1_vectorxlite_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_vectorxlite_v1_vectorxlite_proto_rawDesc), len(file_vectorxlite_v1_vectorxlite_proto_rawDesc)))
 	})
-	return file_vectorxlite_proto_rawDescData
+	return file_vectorxlite_v1_vectorxlite_proto_rawDescData
 }
 
-var file_vectorxlite_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_vectorxlite_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
-var file_vectorxlite_proto_goTypes = []any{
+var file_vectorxlite_v1_vectorxlite_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
+var file_vectorxlite_v1_vectorxlite_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
+var file_vectorxlite_v1_vectorxlite_proto_goTypes = []any{
 	(SnapshotFileTypePB)(0),          // 0: vectorxlite_pb.SnapshotFileTypePB
 	(*EmptyPB)(nil),                  // 1: vectorxlite_pb.EmptyPB
 	(*CollectionConfigPB)(nil),       // 2: vectorxlite_pb.CollectionConfigPB
@@ -1036,7 +1036,7 @@ var file_vectorxlite_proto_goTypes = []any{
 	(*SnapshotFilePB)(nil),           // 12: vectorxlite_pb.SnapshotFilePB
 	(*ImportSnapshotResponsePB)(nil), // 13: vectorxlite_pb.ImportSnapshotResponsePB
 }
-var file_vectorxlite_proto_depIdxs = []int32{
+var file_vectorxlite_v1_vectorxlite_proto_depIdxs = []int32{
 	5,  // 0: vectorxlite_pb.SearchResultItemPB.payload:type_name -> vectorxlite_pb.KeyValuePB
 	6,  // 1: vectorxlite_pb.SearchResponsePB.results:type_name -> vectorxlite_pb.SearchResultItemPB
 	10, // 2: vectorxlite_pb.SnapshotChunkPB.metadata:type_name -> vectorxlite_pb.SnapshotMetadataPB
@@ -1060,27 +1060,27 @@ var file_vectorxlite_proto_depIdxs = []int32{
 	0,  // [0:6] is the sub-list for field type_name
 }
 
-func init() { file_vectorxlite_proto_init() }
-func file_vectorxlite_proto_init() {
-	if File_vectorxlite_proto != nil {
+func init() { file_vectorxlite_v1_vectorxlite_proto_init() }
+func file_vectorxlite_v1_vectorxlite_proto_init() {
+	if File_vectorxlite_v1_vectorxlite_proto != nil {
 		return
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_vectorxlite_proto_rawDesc), len(file_vectorxlite_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_vectorxlite_v1_vectorxlite_proto_rawDesc), len(file_vectorxlite_v1_vectorxlite_proto_rawDesc)),
 			NumEnums:      1,
 			NumMessages:   13,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
-		GoTypes:           file_vectorxlite_proto_goTypes,
-		DependencyIndexes: file_vectorxlite_proto_depIdxs,
-		EnumInfos:         file_vectorxlite_proto_enumTypes,
-		MessageInfos:      file_vectorxlite_proto_msgTypes,
+		GoTypes:           file_vectorxlite_v1_vectorxlite_proto_goTypes,
+		DependencyIndexes: file_vectorxlite_v1_vectorxlite_proto_depIdxs,
+		EnumInfos:         file_vectorxlite_v1_vectorxlite_proto_enumTypes,
+		MessageInfos:      file_vectorxlite_v1_vectorxlite_proto_msgTypes,
 	}.Build()
-	File_vectorxlite_proto = out.File
-	file_vectorxlite_proto_goTypes = nil
-	file_vectorxlite_proto_depIdxs = nil
+	File_vectorxlite_v1_vectorxlite_proto = out.File
+	file_vectorxlite_v1_vectorxlite_proto_goTypes = nil
+	file_vectorxlite_v1_vectorxlite_proto_depIdxs = nil
 }

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	pb "github.com/uttom-akash/vector-xlite/vector_xlite_proxy/pkg/pb"
+	pb "github.com/uttom-akash/vector-xlite/distributed/cluster/pkg/pb"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )

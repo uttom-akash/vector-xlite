@@ -5,8 +5,8 @@ import (
 	"errors"
 	"io"
 
-	pb "github.com/uttom-akash/vector-xlite/go_grpc_client/pb"
-	types "github.com/uttom-akash/vector-xlite/go_grpc_client/types"
+	pb "github.com/uttom-akash/vector-xlite/standalone/clients/go/pb"
+	types "github.com/uttom-akash/vector-xlite/standalone/clients/go/types"
 )
 
 // ExportSnapshot exports a consistent snapshot of the database.

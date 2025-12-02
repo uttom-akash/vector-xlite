@@ -11,7 +11,7 @@ import (
 
 	"github.com/hashicorp/raft"
 	raftboltdb "github.com/hashicorp/raft-boltdb/v2"
-	client "github.com/uttom-akash/vector-xlite/go_grpc_client/client"
+	client "github.com/uttom-akash/vector-xlite/standalone/clients/go/client"
 )
 
 type VxRaftNode struct {

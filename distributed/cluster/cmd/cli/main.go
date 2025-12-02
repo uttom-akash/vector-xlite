@@ -10,8 +10,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/uttom-akash/vector-xlite/vector_xlite_proxy/pkg/client"
-	"github.com/uttom-akash/vector-xlite/vector_xlite_proxy/pkg/pb"
+	"github.com/uttom-akash/vector-xlite/distributed/cluster/pkg/client"
+	"github.com/uttom-akash/vector-xlite/distributed/cluster/pkg/pb"
 )
 
 func main() {

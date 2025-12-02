@@ -4,7 +4,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.5.1
 // - protoc             v3.21.12
-// source: grpc_proto/cluster.proto
+// source: cluster/v1/cluster.proto
 
 package pb
 
@@ -353,5 +353,5 @@ var ClusterService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "grpc_proto/cluster.proto",
+	Metadata: "cluster/v1/cluster.proto",
 }

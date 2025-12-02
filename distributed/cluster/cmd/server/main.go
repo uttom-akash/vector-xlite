@@ -13,10 +13,10 @@ import (
 	"syscall"
 	"time"
 
-	types "github.com/uttom-akash/vector-xlite/go_grpc_client/types"
-	"github.com/uttom-akash/vector-xlite/vector_xlite_proxy/pkg/consensus"
-	"github.com/uttom-akash/vector-xlite/vector_xlite_proxy/pkg/pb"
-	"github.com/uttom-akash/vector-xlite/vector_xlite_proxy/pkg/server"
+	types "github.com/uttom-akash/vector-xlite/standalone/clients/go/types"
+	"github.com/uttom-akash/vector-xlite/distributed/cluster/pkg/consensus"
+	"github.com/uttom-akash/vector-xlite/distributed/cluster/pkg/pb"
+	"github.com/uttom-akash/vector-xlite/distributed/cluster/pkg/server"
 	"google.golang.org/grpc"
 )
 

@@ -1,11 +1,11 @@
-module github.com/uttom-akash/vector-xlite/vector_xlite_proxy
+module github.com/uttom-akash/vector-xlite/distributed/cluster
 
 go 1.25.4
 
 require (
 	github.com/hashicorp/raft v1.7.3
 	github.com/hashicorp/raft-boltdb/v2 v2.3.1
-	github.com/uttom-akash/vector-xlite/go_grpc_client v0.0.0-00010101000000-000000000000
+	github.com/uttom-akash/vector-xlite/standalone/clients/go v0.0.0-00010101000000-000000000000
 	google.golang.org/grpc v1.77.0
 	google.golang.org/protobuf v1.36.10
 )
@@ -29,4 +29,4 @@ require (
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20251022142026-3a174f9686a8 // indirect
 )
 
-replace github.com/uttom-akash/vector-xlite/go_grpc_client => ../../standalone/clients/go
+replace github.com/uttom-akash/vector-xlite/standalone/clients/go => ../../standalone/clients/go

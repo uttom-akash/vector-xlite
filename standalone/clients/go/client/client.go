@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"time"
 
-	pb "github.com/uttom-akash/vector-xlite/go_grpc_client/pb"
-	types "github.com/uttom-akash/vector-xlite/go_grpc_client/types"
+	pb "github.com/uttom-akash/vector-xlite/standalone/clients/go/pb"
+	types "github.com/uttom-akash/vector-xlite/standalone/clients/go/types"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )

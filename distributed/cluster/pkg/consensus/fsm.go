@@ -9,8 +9,8 @@ import (
 	"log"
 
 	"github.com/hashicorp/raft"
-	client "github.com/uttom-akash/vector-xlite/go_grpc_client/client"
-	types "github.com/uttom-akash/vector-xlite/go_grpc_client/types"
+	client "github.com/uttom-akash/vector-xlite/standalone/clients/go/client"
+	types "github.com/uttom-akash/vector-xlite/standalone/clients/go/types"
 )
 
 type VxFSM struct {

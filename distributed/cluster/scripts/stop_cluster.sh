@@ -40,8 +40,8 @@ if [ -f .cluster_pids ]; then
     echo -e "${GREEN}Cluster nodes stopped successfully${NC}"
 else
     echo "No cluster PIDs file found"
-    echo "Attempting to kill any node processes..."
-    pkill -f "cmd/node/main.go" || pkill -f "bin/node" || echo "No node processes found"
+    echo "Attempting to kill any server processes..."
+    pkill -f "cmd/server/main.go" || pkill -f "bin/server" || echo "No server processes found"
 fi
 
 # Stop VectorXLite servers if requested

@@ -24,14 +24,14 @@ jobs:
 
       - name: Build Vector XLite Tests
         run : cargo build --release
-        working-directory: ./vector_xlite_tests
+        working-directory: ./tests/integration
 
       - name: Install cargo NextTest
         run : cargo install cargo-nextest
 
       - name: Run Vector XLite Tests
         run : cargo nextest run --no-fail-fast --jobs=1
-        working-directory: ./vector_xlite_tests
+        working-directory: ./tests/integration
 
       - name: Build Vector XLite Examples
         run : cargo build --release
@@ -42,5 +42,5 @@ jobs:
 
       - name: Build Vector XLite gRPC Server
         run : cargo build --release
-        working-directory: ./vector_xlite_grpc_server
+        working-directory: ./standalone/server
 

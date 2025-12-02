@@ -85,13 +85,13 @@ done
 
 echo ""
 
-# Build the node binary
-echo -e "${YELLOW}Building node binary...${NC}"
-go build -o bin/node cmd/node/main.go
+# Build the server binary
+echo -e "${YELLOW}Building server binary...${NC}"
+go build -o bin/server cmd/server/main.go
 
 # Start node1 (bootstrap node)
 echo -e "${YELLOW}Starting node1 (bootstrap)...${NC}"
-./bin/node \
+./bin/server \
     -id node1 \
     -port 500 \
     -vector-addr "0.0.0.0:5003" \
@@ -104,7 +104,7 @@ sleep 3
 
 # Start node2
 echo -e "${YELLOW}Starting node2...${NC}"
-./bin/node \
+./bin/server \
     -id node2 \
     -port 501 \
     -vector-addr "0.0.0.0:5013" \
@@ -116,7 +116,7 @@ sleep 2
 
 # Start node3
 echo -e "${YELLOW}Starting node3...${NC}"
-./bin/node \
+./bin/server \
     -id node3 \
     -port 502 \
     -vector-addr "0.0.0.0:5023" \
@@ -146,9 +146,9 @@ echo ""
 echo -e "${YELLOW}Waiting for cluster to stabilize (5s)...${NC}"
 sleep 5
 
-# Build client binary
-echo -e "${YELLOW}Building client binary...${NC}"
-go build -o bin/client cmd/client/main.go
+# Build CLI binary
+echo -e "${YELLOW}Building CLI binary...${NC}"
+go build -o bin/client cmd/cli/main.go
 
 # Join node2 and node3 to the cluster
 echo -e "${YELLOW}Joining node2 to cluster...${NC}"

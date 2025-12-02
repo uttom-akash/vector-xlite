@@ -20,18 +20,30 @@ jobs:
       - name: Install Protobuf Compiler
         run: sudo apt-get update && sudo apt-get install -y protobuf-compiler
 
-      - name: Install Vector XLite Go Client Dependancies
-        run: go mod tidy 
-        working-directory: ./vector_xlite_go_client
-      
-      - name: Build Vector XLite Go Client
-        run: go build -v -o vxlite_client_go client/client.go
-        working-directory: ./vector_xlite_go_client
-      
-      - name: Install Go Examples Dependancies
+      - name: Install Standalone Go Client Dependencies
         run: go mod tidy
-        working-directory: ./console_exmples/go_examples
+        working-directory: ./standalone/clients/go
 
-      - name: Build Go Examples
-        run: go build -v -o vxlite-example 
-        working-directory: ./console_exmples/go_examples
+      - name: Build Standalone Go Client
+        run: go build -v -o vxlite_client_go client/client.go
+        working-directory: ./standalone/clients/go
+
+      - name: Install Standalone Examples Dependencies
+        run: go mod tidy
+        working-directory: ./standalone/examples/go
+
+      - name: Build Standalone Examples
+        run: go build -v -o vxlite-example
+        working-directory: ./standalone/examples/go
+
+      - name: Install Distributed Cluster Dependencies
+        run: go mod tidy
+        working-directory: ./distributed/cluster
+
+      - name: Build Distributed Cluster Server
+        run: go build -v -o bin/server cmd/server/main.go
+        working-directory: ./distributed/cluster
+
+      - name: Build Distributed Cluster CLI
+        run: go build -v -o bin/client cmd/cli/main.go
+        working-directory: ./distributed/cluster

@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.5.1
 // - protoc             v3.21.12
-// source: vectorxlite.proto
+// source: vectorxlite/v1/vectorxlite.proto
 
 package vectorxlite_pb
 
@@ -268,5 +268,5 @@ var VectorXLitePB_ServiceDesc = grpc.ServiceDesc{
 			ClientStreams: true,
 		},
 	},
-	Metadata: "vectorxlite.proto",
+	Metadata: "vectorxlite/v1/vectorxlite.proto",
 }
