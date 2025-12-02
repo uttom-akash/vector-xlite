@@ -1,0 +1,124 @@
+// proto/cluster.proto
+syntax = "proto3";
+package vectorxlite.cluster;
+option go_package = "github.com/uttom-akash/vector-xlite/vector_xlite_proxy/pb";
+
+service ClusterService {
+    // Write operations (forwarded to leader)
+    rpc CreateCollection(CreateCollectionRequest) returns (CreateCollectionResponse);
+    rpc Insert(InsertRequest) returns (InsertResponse);
+    rpc Delete(DeleteRequest) returns (DeleteResponse);
+
+    // Read operations (local or leader)
+    rpc Search(SearchRequest) returns (SearchResponse);
+
+    // Cluster management
+    rpc GetClusterInfo(GetClusterInfoRequest) returns (ClusterInfoResponse);
+    rpc JoinCluster(JoinClusterRequest) returns (JoinClusterResponse);
+    rpc LeaveCluster(LeaveClusterRequest) returns (LeaveClusterResponse);
+}
+
+// ============================================================================
+// Cluster Management Messages
+// ============================================================================
+
+message GetClusterInfoRequest {}
+
+message ClusterInfoResponse {
+    string leader_id = 1;
+    string leader_addr = 2;
+    repeated NodeInfo nodes = 3;
+    string state = 4;  // "leader", "follower", "candidate"
+}
+
+message NodeInfo {
+    string node_id = 1;
+    string addr = 2;
+    string state = 3;
+    bool is_voter = 4;
+}
+
+message JoinClusterRequest {
+    string node_id = 1;
+    string node_addr = 2;  // Raft address
+}
+
+message JoinClusterResponse {
+    bool success = 1;
+    string message = 2;
+    string leader_id = 3;
+}
+
+message LeaveClusterRequest {
+    string node_id = 1;
+}
+
+message LeaveClusterResponse {
+    bool success = 1;
+    string message = 2;
+}
+
+// ============================================================================
+// Write Operation Messages
+// ============================================================================
+
+message CreateCollectionRequest {
+    string collection_name = 1;
+    string distance = 2;            // e.g. "Cosine" | "Euclidean" | "Dot"
+    uint32 vector_dimension = 3;
+    string payload_table_schema = 4;
+    string index_file_path = 5;
+}
+
+message CreateCollectionResponse {
+    bool success = 1;
+    string message = 2;
+}
+
+message InsertRequest {
+    string collection_name = 1;
+    int64 id = 2;
+    repeated float vector = 3;
+    string payload_insert_query = 4;
+}
+
+message InsertResponse {
+    bool success = 1;
+    string message = 2;
+}
+
+message DeleteRequest {
+    string collection_name = 1;
+    int64 id = 2;
+}
+
+message DeleteResponse {
+    bool success = 1;
+    string message = 2;
+}
+
+// ============================================================================
+// Read Operation Messages
+// ============================================================================
+
+message SearchRequest {
+    string collection_name = 1;
+    repeated float vector = 2;
+    uint32 top_k = 3;
+    string payload_search_query = 4;
+}
+
+message KeyValue {
+    string key = 1;
+    string value = 2;
+}
+
+message SearchResultItem {
+    int64 rowid = 1;
+    float distance = 2;
+    repeated KeyValue payload = 3;
+}
+
+message SearchResponse {
+    repeated SearchResultItem results = 1;
+}
