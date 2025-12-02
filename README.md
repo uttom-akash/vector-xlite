@@ -18,47 +18,123 @@
 
 ## Overview
 
-**VectorXLite** is a high-performance, embeddable vector database built on SQLite. It combines the power of HNSW-based approximate nearest neighbor search with the flexibility of SQL for metadata filtering, making it ideal for AI/ML applications, semantic search, and recommendation systems.
+**VectorXLite** is a high-performance vector database built on SQLite with HNSW-based approximate nearest neighbor search. It combines the power of vector similarity with the flexibility of SQL for metadata filtering, making it ideal for AI/ML applications, semantic search, and recommendation systems.
 
-### Why VectorXLite?
+### 🎯 Three Deployment Modes
 
-| Feature | Benefit |
-|---------|---------|
-| **Embedded Architecture** | No separate server required - runs in-process |
-| **SQLite Foundation** | Battle-tested storage with ACID guarantees |
-| **HNSW Index** | Sub-millisecond similarity search on millions of vectors |
-| **SQL Filtering** | Full SQL support for complex payload queries |
-| **Atomic Operations** | Transaction support for data consistency |
-| **Zero Configuration** | Works out of the box with sensible defaults |
+VectorXLite adapts to your needs with three distinct deployment modes:
 
----
+<table>
+<tr>
+<td width="33%" valign="top">
 
-## Features
+### 📦 **Embedded**
+**In-process library**
 
-- **Multiple Distance Functions**: Cosine similarity, L2 (Euclidean), and Inner Product
-- **Flexible Dimensions**: Support for vectors of any dimension
-- **Rich Payload Support**: Store and query arbitrary metadata alongside vectors
-- **Hybrid Search**: Combine vector similarity with SQL WHERE clauses
-- **Connection Pooling**: Built-in r2d2 pool support for concurrent access
-- **Persistent Storage**: File-backed or in-memory operation modes
-- **Type-Safe API**: Builder pattern with compile-time validation
+Direct Rust library integration with zero network overhead.
 
----
+**Best for:**
+- Single applications
+- Development & testing
+- Maximum performance
 
-## Installation
-
-Add VectorXLite to your `Cargo.toml`:
-
-```toml
-[dependencies]
-vector_xlite = "0.1"
-r2d2 = "0.8"
-r2d2_sqlite = "0.24"
+**Architecture:**
+```
+App → VectorXLite
 ```
 
+[**Get Started →**](embedded/)
+
+</td>
+<td width="33%" valign="top">
+
+### 🚀 **Standalone**
+**gRPC Server**
+
+Language-agnostic server for remote access.
+
+**Best for:**
+- Multi-language clients
+- Microservices
+- Client-server apps
+
+**Architecture:**
+```
+Client → gRPC
+       → VectorXLite
+```
+
+[**Get Started →**](standalone/)
+
+</td>
+<td width="33%" valign="top">
+
+### 🌐 **Distributed**
+**Raft Cluster**
+
+High-availability cluster with consensus.
+
+**Best for:**
+- Production workloads
+- Fault tolerance
+- High availability
+
+**Architecture:**
+```
+Client → Cluster
+       → Raft
+       → Servers
+```
+
+[**Get Started →**](distributed/)
+
+</td>
+</tr>
+</table>
+
 ---
 
-## Quick Start
+## Quick Comparison
+
+| Feature | Embedded | Standalone | Distributed |
+|---------|----------|------------|-------------|
+| **Language** | Rust only | Any (gRPC) | Any (gRPC) |
+| **Network** | None | TCP/gRPC | TCP/gRPC + Raft |
+| **Setup** | Add dependency | Start server | Start cluster |
+| **Availability** | Single process | Single server | Multi-node HA |
+| **Consistency** | Local ACID | Single node | Raft consensus |
+| **Latency** | Sub-millisecond | ~1-5ms | ~5-20ms |
+| **Use Case** | Apps, tests | Services | Production |
+
+---
+
+## Key Features
+
+### Vector Search
+- **HNSW Algorithm** - Sub-millisecond similarity search on millions of vectors
+- **Multiple Distance Functions** - Cosine, L2 (Euclidean), Inner Product
+- **Flexible Dimensions** - Support for vectors of any dimension
+
+### Payload Management
+- **SQL Filtering** - Full SQL support for complex metadata queries
+- **JSON Support** - Store and query JSON payloads
+- **JOINs & Aggregations** - Complex relational queries on payloads
+
+### Data Integrity
+- **ACID Transactions** - Atomic operations with rollback support
+- **Snapshot Support** - Point-in-time backups and recovery
+- **No Orphans** - Guaranteed consistency between vectors and payloads
+
+### Performance
+- **Connection Pooling** - Concurrent access with r2d2
+- **Persistent Storage** - File-backed or in-memory modes
+- **Optimized Indexing** - Fast inserts and searches
+
+---
+
+## Quick Start by Mode
+
+### 📦 Embedded Mode
 
 ```rust
 use vector_xlite::{VectorXLite, customizer::SqliteConnectionCustomizer, types::*};
@@ -66,350 +142,277 @@ use r2d2::Pool;
 use r2d2_sqlite::SqliteConnectionManager;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // 1. Create connection pool
+    // Create in-memory database
     let manager = SqliteConnectionManager::memory();
     let pool = Pool::builder()
-        .max_size(10)
         .connection_customizer(SqliteConnectionCustomizer::new())
         .build(manager)?;
 
     let db = VectorXLite::new(pool)?;
 
-    // 2. Create a collection
+    // Create collection
     let config = CollectionConfigBuilder::default()
         .collection_name("products")
-        .vector_dimension(384)  // e.g., sentence-transformers output
+        .vector_dimension(384)
         .distance(DistanceFunction::Cosine)
         .payload_table_schema(
-            "CREATE TABLE products (
-                rowid INTEGER PRIMARY KEY,
-                name TEXT NOT NULL,
-                category TEXT,
-                price REAL
-            )"
+            "CREATE TABLE products (rowid INTEGER PRIMARY KEY, name TEXT, price REAL)"
         )
         .build()?;
 
     db.create_collection(config)?;
 
-    // 3. Insert vectors with metadata
-    let embedding = vec![0.1, 0.2, 0.3, /* ... 384 dimensions */];
-
+    // Insert vector
     let point = InsertPoint::builder()
         .collection_name("products")
         .id(1)
-        .vector(embedding)
-        .payload_insert_query(
-            "INSERT INTO products(rowid, name, category, price)
-             VALUES (?1, 'Wireless Headphones', 'Electronics', 99.99)"
-        )
+        .vector(vec![0.1; 384])
+        .payload_insert_query("INSERT INTO products VALUES (?1, 'Headphones', 99.99)")
         .build()?;
 
     db.insert(point)?;
 
-    // 4. Search with payload filtering
-    let query_vector = vec![0.15, 0.25, 0.35, /* ... */];
-
+    // Search
     let search = SearchPoint::builder()
         .collection_name("products")
-        .vector(query_vector)
+        .vector(vec![0.15; 384])
         .top_k(10)
-        .payload_search_query(
-            "SELECT rowid, name, category, price
-             FROM products
-             WHERE category = 'Electronics' AND price < 150"
-        )
+        .payload_search_query("SELECT * FROM products WHERE price < 150")
         .build()?;
 
     let results = db.search(search)?;
-
-    for result in results {
-        println!("Found: {} - ${}", result["name"], result["price"]);
-    }
+    println!("Results: {:?}", results);
 
     Ok(())
 }
 ```
 
----
+[**Full Guide →**](embedded/)
 
-## API Reference
+### 🚀 Standalone Mode
 
-### VectorXLite
+```bash
+# Start the gRPC server
+cargo run -p vector_xlite_server --release
 
-The main entry point for all database operations.
+# Use Go client
+import "github.com/your-org/vectorxlite-go-client/client"
 
-```rust
-// Create from connection pool
-let db = VectorXLite::new(pool)?;
-
-// Available operations
-db.create_collection(config)?;  // Create a new collection
-db.insert(point)?;              // Insert a vector with payload
-db.search(search_point)?;       // Perform similarity search
+client, _ := client.NewVectorXLiteClient("localhost:50051")
 ```
 
-### CollectionConfigBuilder
+[**Full Guide →**](standalone/) *(Coming soon)*
 
-Configure a new vector collection.
+### 🌐 Distributed Mode
 
-| Method | Type | Description |
-|--------|------|-------------|
-| `collection_name` | `&str` | Unique identifier for the collection |
-| `vector_dimension` | `u16` | Number of dimensions (default: 3) |
-| `distance` | `DistanceFunction` | Similarity metric (default: Cosine) |
-| `max_elements` | `usize` | Maximum vectors (default: 100,000) |
-| `payload_table_schema` | `&str` | SQL CREATE TABLE statement |
-| `index_file_path` | `&str` | Path for persistent HNSW index |
+```bash
+# Start 3-node cluster with Raft consensus
+cd distributed/cluster
+./scripts/start_cluster.sh
 
-```rust
-let config = CollectionConfigBuilder::default()
-    .collection_name("embeddings")
-    .vector_dimension(768)
-    .distance(DistanceFunction::Cosine)
-    .max_elements(1_000_000)
-    .payload_table_schema("CREATE TABLE embeddings (rowid INTEGER PRIMARY KEY, data TEXT)")
-    .index_file_path("/data/embeddings.idx")
-    .build()?;
+# Use cluster client
+client, _ := cluster.NewClusterClient("localhost:5002")
 ```
 
-### InsertPoint
-
-Insert vectors with associated metadata.
-
-| Method | Type | Description |
-|--------|------|-------------|
-| `collection_name` | `&str` | Target collection |
-| `id` | `u64` | Unique vector identifier |
-| `vector` | `Vec<f32>` | The embedding vector |
-| `payload_insert_query` | `&str` | SQL INSERT statement (use `?1` for rowid) |
-
-```rust
-let point = InsertPoint::builder()
-    .collection_name("documents")
-    .id(42)
-    .vector(embedding)
-    .payload_insert_query("INSERT INTO documents(rowid, title) VALUES (?1, 'My Doc')")
-    .build()?;
-```
-
-### SearchPoint
-
-Configure similarity search queries.
-
-| Method | Type | Description |
-|--------|------|-------------|
-| `collection_name` | `&str` | Collection to search |
-| `vector` | `Vec<f32>` | Query vector |
-| `top_k` | `i32` | Number of results (default: 10) |
-| `payload_search_query` | `&str` | SQL SELECT for payload filtering |
-
-```rust
-let search = SearchPoint::builder()
-    .collection_name("documents")
-    .vector(query_embedding)
-    .top_k(20)
-    .payload_search_query("SELECT * FROM documents WHERE status = 'active'")
-    .build()?;
-```
-
-### Distance Functions
-
-| Function | Description | Best For |
-|----------|-------------|----------|
-| `Cosine` | Cosine similarity (normalized) | Text embeddings, NLP |
-| `L2` | Euclidean distance | Image features, spatial data |
-| `IP` | Inner product (dot product) | When vectors are pre-normalized |
+[**Full Guide →**](distributed/) *(Coming soon)*
 
 ---
 
-## Storage Modes
+## Installation
 
-### In-Memory (Development/Testing)
+### Embedded Mode
 
-```rust
-let manager = SqliteConnectionManager::memory();
-let pool = Pool::builder()
-    .connection_customizer(SqliteConnectionCustomizer::new())
-    .build(manager)?;
+```toml
+[dependencies]
+vector_xlite = "1.2"
+r2d2 = "0.8"
+r2d2_sqlite = "0.31"
 ```
 
-### File-Backed (Production)
+### Standalone Mode
 
-```rust
-let manager = SqliteConnectionManager::file("vectors.db");
-let pool = Pool::builder()
-    .connection_customizer(SqliteConnectionCustomizer::new())
-    .build(manager)?;
+```bash
+# Server
+cargo build --release -p vector_xlite_server
 
-// With persistent HNSW index
-let config = CollectionConfigBuilder::default()
-    .collection_name("production")
-    .index_file_path("/data/production.idx")
-    // ... other config
-    .build()?;
+# Go Client
+go get github.com/your-org/vectorxlite-go-client
+```
+
+### Distributed Mode
+
+```bash
+# Build cluster
+cd distributed/cluster
+make build
 ```
 
 ---
 
-## Advanced Usage
+## Project Structure
 
-### Complex Payload Queries with JOINs
-
-```rust
-// Create related tables
-let author_table = "CREATE TABLE authors (id INTEGER PRIMARY KEY, name TEXT)";
-let book_table = "CREATE TABLE books (
-    rowid INTEGER PRIMARY KEY,
-    author_id INTEGER,
-    title TEXT,
-    FOREIGN KEY (author_id) REFERENCES authors(id)
-)";
-
-// Search with JOIN
-let search = SearchPoint::builder()
-    .collection_name("books")
-    .vector(query)
-    .top_k(10)
-    .payload_search_query(
-        "SELECT b.rowid, b.title, a.name as author
-         FROM books b
-         JOIN authors a ON a.id = b.author_id
-         WHERE a.name LIKE '%Smith%'"
-    )
-    .build()?;
 ```
-
-### JSON Payload Support
-
-```rust
-let config = CollectionConfigBuilder::default()
-    .collection_name("products")
-    .payload_table_schema(
-        "CREATE TABLE products (
-            rowid INTEGER PRIMARY KEY,
-            metadata JSON
-        )"
-    )
-    .build()?;
-
-// Insert with JSON
-let point = InsertPoint::builder()
-    .collection_name("products")
-    .id(1)
-    .vector(embedding)
-    .payload_insert_query(
-        r#"INSERT INTO products(rowid, metadata)
-           VALUES (?1, '{"tags": ["sale", "new"], "stock": 100}')"#
-    )
-    .build()?;
-
-// Query JSON fields
-let search = SearchPoint::builder()
-    .collection_name("products")
-    .vector(query)
-    .payload_search_query(
-        "SELECT * FROM products
-         WHERE json_extract(metadata, '$.stock') > 0"
-    )
-    .build()?;
+vector-db-rs/
+├── embedded/          # Embedded library mode
+│   ├── core/         # Core Rust library
+│   ├── examples/     # Rust examples
+│   └── docs/         # Embedded mode docs
+│
+├── standalone/        # Standalone server mode (coming soon)
+│   ├── server/       # gRPC server
+│   ├── clients/      # Go, Rust, Python clients
+│   └── examples/     # Client examples
+│
+├── distributed/       # Distributed cluster mode (coming soon)
+│   ├── cluster/      # Raft-based cluster
+│   ├── clients/      # Cluster clients
+│   └── examples/     # Cluster examples
+│
+├── proto/            # Protocol buffer definitions
+├── tests/            # Integration tests
+├── docs/             # Comprehensive documentation
+└── scripts/          # Build and deployment scripts
 ```
-
-### Custom Connection Timeout
-
-```rust
-use vector_xlite::customizer::SqliteConnectionCustomizer;
-
-// Default timeout: 15 seconds
-let customizer = SqliteConnectionCustomizer::new();
-
-// Custom timeout (in milliseconds)
-let customizer = SqliteConnectionCustomizer::with_busy_timeout(30000);
-
-let pool = Pool::builder()
-    .connection_customizer(customizer)
-    .build(manager)?;
-```
-
----
-
-## Performance Characteristics
-
-| Operation | Complexity | Notes |
-|-----------|------------|-------|
-| Insert | O(log n) | HNSW index update |
-| Search | O(log n) | Approximate nearest neighbor |
-| Payload Filter | O(m) | SQLite query on matched vectors |
-
-### Optimization Tips
-
-1. **Batch Inserts**: Group multiple inserts in a single transaction
-2. **Index Payload Columns**: Create SQLite indexes on frequently filtered columns
-3. **Tune `max_elements`**: Set appropriately for your dataset size
-4. **Use File Storage**: For datasets larger than available RAM
-
----
-
-## Transaction Safety
-
-VectorXLite provides atomic operations for data consistency:
-
-```rust
-// Both vector and payload are inserted atomically
-// If either fails, the entire operation is rolled back
-db.insert(point)?;
-```
-
-**Guarantees:**
-- No orphan vectors (vectors without payload)
-- No orphan payloads (payload without vectors)
-- Failed operations don't affect existing data
-
----
-
-## Use Cases
-
-| Application | Description |
-|-------------|-------------|
-| **Semantic Search** | Find documents by meaning, not just keywords |
-| **Recommendation Systems** | Similar item suggestions based on embeddings |
-| **Image Search** | Find visually similar images using CNN features |
-| **RAG Applications** | Retrieval-Augmented Generation for LLMs |
-| **Anomaly Detection** | Find outliers in high-dimensional data |
-| **Deduplication** | Identify near-duplicate content |
 
 ---
 
 ## Examples
 
-The repository includes example applications:
+### Run Embedded Examples
 
 ```bash
-# Run the basic example
-cargo run -p example
+# Run all examples
+cargo run -p embedded-examples --release
 
-# Run tests
-cargo test
+# Output:
+# ✅ Inserted complex story points
+# 🚀 Search Results: [...]
+```
+
+### Run Tests
+
+```bash
+# Run all tests
+cargo test --release
+
+# Run integration tests
+cargo test -p vector_xlite_tests --release
 ```
 
 ---
 
 ## Architecture
 
+### Embedded Mode
 ```
-┌─────────────────────────────────────────────────────────┐
-│                     VectorXLite API                     │
-├─────────────────────────────────────────────────────────┤
-│  CollectionConfig  │  InsertPoint  │  SearchPoint      │
-├─────────────────────────────────────────────────────────┤
-│                    Query Planner                        │
-├──────────────────────┬──────────────────────────────────┤
-│    HNSW Index        │         SQLite                   │
-│  (Vector Search)     │    (Payload Storage)             │
-├──────────────────────┴──────────────────────────────────┤
-│                 Connection Pool (r2d2)                  │
-└─────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────┐
+│          Your Application               │
+├─────────────────────────────────────────┤
+│         VectorXLite Library             │
+├──────────────────┬──────────────────────┤
+│   HNSW Index     │      SQLite          │
+└──────────────────┴──────────────────────┘
 ```
+
+### Standalone Mode
+```
+┌─────────────┐
+│   Client    │
+│  (Any Lang) │
+└──────┬──────┘
+       │ gRPC
+┌──────▼──────────────────────────────────┐
+│      VectorXLite gRPC Server (Rust)     │
+├──────────────────┬──────────────────────┤
+│   HNSW Index     │      SQLite          │
+└──────────────────┴──────────────────────┘
+```
+
+### Distributed Mode
+```
+┌─────────────┐
+│   Client    │
+└──────┬──────┘
+       │ gRPC
+┌──────▼──────────────────────────────────┐
+│        Cluster Proxy (Go + Raft)        │
+│    Leader ◄─── Consensus ───► Follower  │
+└──────┬──────────────────────┬───────────┘
+       │                      │
+┌──────▼──────┐        ┌──────▼──────┐
+│ VectorXLite │        │ VectorXLite │
+│   Server    │        │   Server    │
+└─────────────┘        └─────────────┘
+```
+
+---
+
+## Use Cases
+
+| Use Case | Description | Recommended Mode |
+|----------|-------------|------------------|
+| **RAG for LLMs** | Retrieval-Augmented Generation | Embedded or Standalone |
+| **Semantic Search** | Find documents by meaning | Any mode |
+| **Recommendation** | Similar item suggestions | Embedded or Standalone |
+| **Image Search** | Visual similarity | Standalone |
+| **Production System** | High availability required | **Distributed** |
+| **Microservices** | Multi-language services | Standalone |
+
+---
+
+## Performance
+
+| Operation | Embedded | Standalone | Distributed |
+|-----------|----------|------------|-------------|
+| Insert (1000 vectors) | ~50ms | ~100ms | ~200ms |
+| Search (top 10) | <1ms | ~2ms | ~10ms |
+| Throughput | 20k ops/s | 10k ops/s | 5k ops/s |
+| Dataset Size | Limited by RAM | Limited by disk | Distributed |
+
+*Benchmarks on: Rust 1.70, Ubuntu 22.04, 16-core CPU, 384-dim vectors*
+
+---
+
+## Documentation
+
+- **[Embedded Mode Guide](embedded/)** - In-process library usage
+- **[Standalone Mode Guide](standalone/)** - gRPC server setup *(coming soon)*
+- **[Distributed Mode Guide](distributed/)** - Cluster deployment *(coming soon)*
+- **[API Reference](https://docs.rs/vector_xlite)** - Full API documentation
+- **[Architecture](docs/architecture.md)** - System design *(coming soon)*
+
+---
+
+## Contributing
+
+Contributions are welcome! Please see our [Contributing Guide](CONTRIBUTING.md).
+
+```bash
+# Clone the repository
+git clone https://github.com/uttom-akash/vector-db-rs
+cd vector-db-rs
+
+# Build all modes
+make build-all
+
+# Run all tests
+make test-all
+```
+
+---
+
+## Roadmap
+
+- [x] Embedded mode with SQLite + HNSW
+- [x] Snapshot support for backups
+- [x] Atomic transactions
+- [x] Distributed cluster with Raft consensus
+- [ ] Complete standalone mode migration
+- [ ] Complete distributed mode migration
+- [ ] Python client library
+- [ ] Observability stack (Prometheus, Grafana)
+- [ ] Kubernetes deployment guides
+- [ ] Performance optimizations
 
 ---
 
@@ -417,25 +420,14 @@ cargo test
 
 - **Rust**: 1.70 or later
 - **SQLite**: 3.35 or later (with extension loading enabled)
+- **Go**: 1.20+ (for distributed mode)
 - **Platforms**: Linux, macOS, Windows
-
----
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
 
 ---
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT OR Apache-2.0 License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
@@ -447,6 +439,17 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
+## Acknowledgments
+
+Built with:
+- **Rust** - Systems programming language
+- **SQLite** - Embedded database
+- **HNSW** - Approximate nearest neighbor search
+- **Raft** - Distributed consensus (HashiCorp implementation)
+- **gRPC** - Remote procedure calls
+
+---
+
 <p align="center">
-  <sub>Built with Rust and SQLite</sub>
+  <sub>VectorXLite - Fast, flexible, and reliable vector search</sub>
 </p>

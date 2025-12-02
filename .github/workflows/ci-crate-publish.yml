@@ -29,7 +29,7 @@ jobs:
       
       - name: Read Local vector_xlite Version
         id: local_vector_xlite_metadata
-        working-directory: ./vector_xlite
+        working-directory: ./embedded/core
         run: |
           LOCAL_VERSION=$(grep '^version' Cargo.toml | head -1 | sed 's/version = "//;s/"//')
           echo "version=$LOCAL_VERSION" | tee -a $GITHUB_OUTPUT
@@ -47,7 +47,7 @@ jobs:
         run: |
           LOCAL=${{ steps.local_vector_xlite_metadata.outputs.version }}
           REMOTE=${{ steps.remote_vector_xlite_metadata.outputs.version }}
-  
+
           LATEST=$(printf '%s\n%s' "$REMOTE" "$LOCAL" | sort -V | tail -n1)
 
           if [ "$LATEST" = "$LOCAL" ] && [ "$LOCAL" != "$REMOTE" ]; then
@@ -56,6 +56,6 @@ jobs:
           else
             echo "vector_xlite version: $LATEST already exists"
           fi
-        working-directory: ./vector_xlite
+        working-directory: ./embedded/core
         
 

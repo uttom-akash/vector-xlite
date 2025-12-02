@@ -1,0 +1,14 @@
+# VectorXLite Tools Dependencies
+# Used for build automation, testing, and cluster management
+
+# gRPC and protobuf tools
+grpcio==1.62.0
+grpcio-tools==1.62.0
+protobuf==4.25.3
+
+# CLI and formatting
+rich==13.7.0
+click==8.1.7
+
+# Process management
+psutil==5.9.8

@@ -1,0 +1,11 @@
+[package]
+name = "embedded-examples"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+vector_xlite = { path = "../../core" }
+rusqlite = { version = "0.37.0", features = ["load_extension"] }
+r2d2 = "0.8.10"
+r2d2_sqlite = { version = "0.31.0" }
+

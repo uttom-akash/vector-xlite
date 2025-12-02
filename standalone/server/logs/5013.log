@@ -1,0 +1,89 @@
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+   Compiling vector_xlite_grpc v0.1.0 (/home/akash/Dev/vector-db-rs/standalone/server)
+warning: unused import: `DropBehavior`
+ --> embedded/core/src/executor/sqlite_query_executor.rs:4:16
+  |
+4 | use rusqlite::{DropBehavior, Result};
+  |                ^^^^^^^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` on by default
+
+warning: glob import doesn't reexport anything with visibility `pub` because no imported item is public enough
+ --> embedded/core/src/constant/mod.rs:3:9
+  |
+3 | pub use constant::*;
+  |         ^^^^^^^^^^^
+  |
+note: the most public imported item is `pub(crate)`
+ --> embedded/core/src/constant/mod.rs:3:9
+  |
+3 | pub use constant::*;
+  |         ^^^^^^^^^^^
+  = help: reduce the glob import's visibility or increase visibility of imported items
+
+warning: static `RE_COLLECTION_NAME` is never used
+  --> embedded/core/src/helper/sql_helper.rs:16:8
+   |
+16 | static RE_COLLECTION_NAME: Lazy<Regex> =
+   |        ^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` on by default
+
+warning: function `parse_collection_name` is never used
+  --> embedded/core/src/helper/sql_helper.rs:82:8
+   |
+82 | pub fn parse_collection_name(sql_opt: Option<&String>) -> Option<String> {
+   |        ^^^^^^^^^^^^^^^^^^^^^
+
+warning: constant `WIN_VECTOR_EXTENSION_PATH` is never used
+ --> embedded/core/src/constant/constant.rs:2:18
+  |
+2 | pub(crate) const WIN_VECTOR_EXTENSION_PATH: &str = "vector_extension/vector_extension.dll";
+  |                  ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: constant `MAC_VECTOR_EXTENSION_PATH` is never used
+ --> embedded/core/src/constant/constant.rs:3:18
+  |
+3 | pub(crate) const MAC_VECTOR_EXTENSION_PATH: &str = "vector_extension/vector_extension.dylib";
+  |                  ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: constant `LINUX_VECTOR_EXTENSION_PATH` is never used
+ --> embedded/core/src/constant/constant.rs:4:18
+  |
+4 | pub(crate) const LINUX_VECTOR_EXTENSION_PATH: &str = "vector_extension/vector_extension.so";
+  |                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: constant `CARGO_MANIFEST_DIR_ENV` is never used
+ --> embedded/core/src/constant/constant.rs:5:18
+  |
+5 | pub(crate) const CARGO_MANIFEST_DIR_ENV: &str = "CARGO_MANIFEST_DIR";
+  |                  ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: field `path` is never read
+   --> embedded/core/src/snapshot/importer.rs:273:5
+    |
+271 | struct FileWriter {
+    |        ---------- field in this struct
+272 |     file: File,
+273 |     path: PathBuf,
+    |     ^^^^
+
+warning: function `backup_to_memory` is never used
+   --> embedded/core/src/snapshot/sqlite_backup.rs:111:8
+    |
+111 | pub fn backup_to_memory(pool: &Pool<SqliteConnectionManager>) -> Result<Vec<u8>, VecXError> {
+    |        ^^^^^^^^^^^^^^^^
+
+warning: function `restore_from_memory` is never used
+   --> embedded/core/src/snapshot/sqlite_backup.rs:170:8
+    |
+170 | pub fn restore_from_memory(
+    |        ^^^^^^^^^^^^^^^^^^^
+
+warning: `vector_xlite` (lib) generated 11 warnings (run `cargo fix --lib -p vector_xlite` to apply 1 suggestion)
+    Finished `release` profile [optimized] target(s) in 3.94s
+     Running `/home/akash/Dev/vector-db-rs/target/release/vector_xlite_grpc --port 5013`
+VectorXLite gRPC server starting on 0.0.0.0:5013
