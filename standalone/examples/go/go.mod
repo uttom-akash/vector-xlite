@@ -2,9 +2,9 @@ module github.com/uttom-akash/go_examples
 
 go 1.25.3
 
-replace github.com/uttom-akash/vector-xlite/go_grpc_client => ../../vector_xlite_go_client
+replace github.com/uttom-akash/vector-xlite/standalone/clients/go => ../../clients/go
 
-require github.com/uttom-akash/vector-xlite/go_grpc_client v0.0.0-00010101000000-000000000000
+require github.com/uttom-akash/vector-xlite/standalone/clients/go v0.0.0-00010101000000-000000000000
 
 require (
 	golang.org/x/net v0.42.0 // indirect
