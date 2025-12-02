@@ -20,8 +20,8 @@ jobs:
       
       - name: Build Vector XLite Crate
         run : cargo build --release
-        working-directory: ./vector_xlite
-      
+        working-directory: ./embedded/core
+
       - name: Build Vector XLite Tests
         run : cargo build --release
         working-directory: ./vector_xlite_tests
@@ -35,7 +35,7 @@ jobs:
 
       - name: Build Vector XLite Examples
         run : cargo build --release
-        working-directory: ./console_exmples/rust_examples
+        working-directory: ./embedded/examples/rust
 
       - name: Install Protobuf Compiler
         run: sudo apt-get update && sudo apt-get install -y protobuf-compiler

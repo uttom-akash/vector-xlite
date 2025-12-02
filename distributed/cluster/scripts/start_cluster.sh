@@ -17,7 +17,7 @@ NC='\033[0m' # No Color
 echo -e "${GREEN}=== Starting VectorXLite Proxy Cluster ===${NC}"
 
 # Path to VectorXLite gRPC server
-VECTOR_XLITE_DIR="/home/akash/Dev/vector-db-rs/vector_xlite_grpc_server"
+VECTOR_XLITE_DIR="/home/akash/Dev/vector-db-rs/standalone/server"
 
 if [ ! -d "$VECTOR_XLITE_DIR" ]; then
     echo -e "${RED}Error: VectorXLite server directory not found at $VECTOR_XLITE_DIR${NC}"
@@ -33,7 +33,7 @@ echo -e "${YELLOW}Starting VectorXLite servers...${NC}"
 # Start VectorXLite server 1 on port 5003
 if ! nc -z localhost 5003 2>/dev/null; then
     echo "Starting VectorXLite server 1 on port 5003..."
-    (cd "$VECTOR_XLITE_DIR" && cargo run --release -- --port 5003 > ../vector_xlite_proxy/logs/vector_xlite_node1.log 2>&1) &
+    (cd "$VECTOR_XLITE_DIR" && cargo run --release -- --port 5003 > ../../distributed/cluster/logs/vector_xlite_node1.log 2>&1) &
     VECTOR_PID1=$!
     echo "$VECTOR_PID1" > .vector_xlite_pids
     echo "  Node1 VectorXLite started with PID: $VECTOR_PID1"
@@ -44,7 +44,7 @@ fi
 # Start VectorXLite server 2 on port 5013
 if ! nc -z localhost 5013 2>/dev/null; then
     echo "Starting VectorXLite server 2 on port 5013..."
-    (cd "$VECTOR_XLITE_DIR" && cargo run --release -- --port 5013 > ../vector_xlite_proxy/logs/vector_xlite_node2.log 2>&1) &
+    (cd "$VECTOR_XLITE_DIR" && cargo run --release -- --port 5013 > ../../distributed/cluster/logs/vector_xlite_node2.log 2>&1) &
     VECTOR_PID2=$!
     echo "$VECTOR_PID2" >> .vector_xlite_pids
     echo "  Node2 VectorXLite started with PID: $VECTOR_PID2"
@@ -55,7 +55,7 @@ fi
 # Start VectorXLite server 3 on port 5023
 if ! nc -z localhost 5023 2>/dev/null; then
     echo "Starting VectorXLite server 3 on port 5023..."
-    (cd "$VECTOR_XLITE_DIR" && cargo run --release -- --port 5023 > ../vector_xlite_proxy/logs/vector_xlite_node3.log 2>&1) &
+    (cd "$VECTOR_XLITE_DIR" && cargo run --release -- --port 5023 > ../../distributed/cluster/logs/vector_xlite_node3.log 2>&1) &
     VECTOR_PID3=$!
     echo "$VECTOR_PID3" >> .vector_xlite_pids
     echo "  Node3 VectorXLite started with PID: $VECTOR_PID3"

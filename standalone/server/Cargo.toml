@@ -1,7 +1,7 @@
 [package]
 name = "vector_xlite_grpc"
 version = "0.1.0"
-edition = "2024"
+edition = "2021"
 
 
 [dependencies]
@@ -10,10 +10,10 @@ prost = "0.14"
 tonic-prost = "*"
 tokio = { version = "1.0", features = ["macros", "rt-multi-thread"] }
 tokio-stream = "0.1"
-rusqlite = { version = "0.37.0", features = ["load_extension" ]}
-vector_xlite = { path = "../vector_xlite" }
+rusqlite = { version = "0.37.0", features = ["load_extension"] }
+vector_xlite = { path = "../../embedded/core" }
 r2d2 = "0.8.10"
-r2d2_sqlite = { version = "0.31.0"}
+r2d2_sqlite = { version = "0.31.0" }
 dotenvy = "0.15"
 clap = { version = "4.5", features = ["derive"] }
 

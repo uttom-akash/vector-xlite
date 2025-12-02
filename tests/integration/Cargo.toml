@@ -1,13 +1,13 @@
 [package]
 name = "vector_xlite_tests"
 version = "0.1.0"
-edition = "2024"
+edition = "2021"
 
 [dependencies]
-vector_xlite = {path = "../vector_xlite"}
-rusqlite = { version = "0.37.0", features = ["load_extension" ]}
+vector_xlite = { path = "../../embedded/core" }
+rusqlite = { version = "0.37.0", features = ["load_extension"] }
 r2d2 = "0.8.10"
-r2d2_sqlite = { version = "0.31.0"}
+r2d2_sqlite = { version = "0.31.0" }
 
 [dev-dependencies]
 # Property-based testing (uncomment to use)
