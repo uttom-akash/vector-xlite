@@ -1,0 +1,8 @@
+data/
+bin/
+logs/
+*.log
+.cluster_pids
+.vector_xlite_pid
+.vector_xlite_pids
+*.db
