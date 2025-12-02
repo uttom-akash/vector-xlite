@@ -1,0 +1,376 @@
++ modes: **Embedded**, **Server**, and **Distributed Cluster**.
+         4 +  
+         5 +  ## New Project Structure
+         6 +  
+         7 +  ```
+         8 +  vector-db-rs/
+         9 +  │
+        10 +  ├── README.md                          # Main project README
+        11 +  ├── LICENSE
+        12 +  ├── Cargo.toml                         # Rust workspace root
+        13 +  ├── Makefile                           # Build automation
+        14 +  ├── .gitignore
+        15 +  │
+        16 +  ├── 1-embedded/                        # MODE 1: Embedded Library
+        17 +  │   ├── README.md                      # "Using VectorXLite as Embedded Library"
+        18 +  │   ├── core/                          # Core Rust library (was: vector_xlite/)
+        19 +  │   │   ├── Cargo.toml
+        20 +  │   │   ├── src/
+        21 +  │   │   │   ├── lib.rs
+        22 +  │   │   │   ├── vector_xlite.rs
+        23 +  │   │   │   ├── executor/
+        24 +  │   │   │   ├── planner/
+        25 +  │   │   │   ├── types/
+        26 +  │   │   │   ├── error/
+        27 +  │   │   │   ├── snapshot/
+        28 +  │   │   │   ├── customizer/
+        29 +  │   │   │   ├── helper/
+        30 +  │   │   │   └── constant/
+        31 +  │   │   ├── assets/                    # SQLite extensions
+        32 +  │   │   │   ├── vectorlite.so
+        33 +  │   │   │   ├── vectorlite.dylib
+        34 +  │   │   │   └── vectorlite.dll
+        35 +  │   │   └── benches/                   # Performance benchmarks
+        36 +  │   │
+        37 +  │   ├── examples/                      # Embedded mode examples
+        38 +  │   │   ├── rust/
+        39 +  │   │   │   ├── basic-usage/
+        40 +  │   │   │   │   ├── Cargo.toml
+        41 +  │   │   │   │   └── src/main.rs
+        42 +  │   │   │   ├── advanced-search/
+        43 +  │   │   │   │   ├── Cargo.toml
+        44 +  │   │   │   │   └── src/main.rs
+        45 +  │   │   │   ├── json-payload/
+        46 +  │   │   │   │   ├── Cargo.toml
+        47 +  │   │   │   │   └── src/main.rs
+        48 +  │   │   │   └── transactions/
+        49 +  │   │   │       ├── Cargo.toml
+        50 +  │   │   │       └── src/main.rs
+        51 +  │   │   │
+        52 +  │   │   └── python/                    # Future: Python bindings via PyO3
+        53 +  │   │       └── README.md
+        54 +  │   │
+        55 +  │   └── docs/
+        56 +  │       ├── getting-started.md
+        57 +  │       ├── api-reference.md
+        58 +  │       ├── performance-tuning.md
+        59 +  │       └── architecture.md
+        60 +  │
+        61 +  ├── 2-server/                          # MODE 2: gRPC Server
+        62 +  │   ├── README.md                      # "Running VectorXLite as gRPC Server"
+        63 +  │   ├── server/                        # Rust gRPC server (was: 
+           + vector_xlite_grpc_server/)
+        64 +  │   │   ├── Cargo.toml
+        65 +  │   │   ├── build.rs
+        66 +  │   │   ├── Dockerfile
+        67 +  │   │   ├── src/
+        68 +  │   │   │   ├── main.rs
+        69 +  │   │   │   ├── lib.rs
+        70 +  │   │   │   ├── vector_xlite_grpc.rs
+        71 +  │   │   │   └── conversions.rs
+        72 +  │   │   └── config/
+        73 +  │   │       └── server.yaml
+        74 +  │   │
+        75 +  │   ├── clients/                       # Clients for VectorXLite gRPC API
+        76 +  │   │   ├── go/                        # Go client (was: vector_xlite_go_client/)
+        77 +  │   │   │   ├── README.md
+        78 +  │   │   │   ├── go.mod
+        79 +  │   │   │   ├── go.sum
+        80 +  │   │   │   ├── client/
+        81 +  │   │   │   │   ├── client.go
+        82 +  │   │   │   │   └── snapshot.go
+        83 +  │   │   │   ├── types/
+        84 +  │   │   │   │   ├── collection_config.go
+        85 +  │   │   │   │   ├── distance_func.go
+        86 +  │   │   │   │   ├── insert_point.go
+        87 +  │   │   │   │   ├── search_point.go
+        88 +  │   │   │   │   └── search_result.go
+        89 +  │   │   │   └── pb/                    # Generated from proto/vectorxlite/
+        90 +  │   │   │       ├── vectorxlite.pb.go
+        91 +  │   │   │       └── vectorxlite_grpc.pb.go
+        92 +  │   │   │
+        93 +  │   │   ├── rust/                      # Future: Rust client
+        94 +  │   │   │   └── README.md
+        95 +  │   │   │
+        96 +  │   │   └── python/                    # Future: Python client
+        97 +  │   │       └── README.md
+        98 +  │   │
+        99 +  │   ├── examples/                      # Server mode examples
+       100 +  │   │   ├── go/
+       101 +  │   │   │   ├── basic-client/
+       102 +  │   │   │   │   ├── go.mod
+       103 +  │   │   │   │   └── main.go
+       104 +  │   │   │   ├── bulk-insert/
+       105 +  │   │   │   │   ├── go.mod
+       106 +  │   │   │   │   └── main.go
+       107 +  │   │   │   └── advanced-search/
+       108 +  │   │   │       ├── go.mod
+       109 +  │   │   │       └── main.go
+       110 +  │   │   │
+       111 +  │   │   └── rust/
+       112 +  │   │       └── README.md
+       113 +  │   │
+       114 +  │   ├── deployments/
+       115 +  │   │   ├── docker/
+       116 +  │   │   │   ├── Dockerfile
+       117 +  │   │   │   └── docker-compose.yml
+       118 +  │   │   └── kubernetes/
+       119 +  │   │       ├── deployment.yaml
+       120 +  │   │       ├── service.yaml
+       121 +  │   │       └── configmap.yaml
+       122 +  │   │
+       123 +  │   └── docs/
+       124 +  │       ├── getting-started.md
+       125 +  │       ├── api-reference.md
+       126 +  │       ├── deployment.md
+       127 +  │       └── performance.md
+       128 +  │
+       129 +  ├── 3-distributed/                     # MODE 3: Distributed Cluster with Raft
+       130 +  │   ├── README.md                      # "Running VectorXLite as Distributed Cluster"
+       131 +  │   ├── cluster/                       # Go-based cluster proxy (was: 
+           + vector_xlite_proxy/)
+       132 +  │   │   ├── go.mod
+       133 +  │   │   ├── go.sum
+       134 +  │   │   ├── Makefile
+       135 +  │   │   │
+       136 +  │   │   ├── cmd/
+       137 +  │   │   │   ├── server/                # Main cluster node server (was: node/)
+       138 +  │   │   │   │   └── main.go
+       139 +  │   │   │   │
+       140 +  │   │   │   └── cli/                   # CLI management tool (was: client/)
+       141 +  │   │   │       └── main.go
+       142 +  │   │   │
+       143 +  │   │   ├── pkg/                       # Public/reusable packages
+       144 +  │   │   │   ├── consensus/             # Raft consensus implementation
+       145 +  │   │   │   │   ├── raft.go
+       146 +  │   │   │   │   ├── fsm.go             # Finite State Machine
+       147 +  │   │   │   │   ├── commands.go
+       148 +  │   │   │   │   └── snapshot.go
+       149 +  │   │   │   │
+       150 +  │   │   │   ├── server/                # Cluster gRPC server
+       151 +  │   │   │   │   ├── server.go
+       152 +  │   │   │   │   ├── interceptor.go
+       153 +  │   │   │   │   └── middleware.go
+       154 +  │   │   │   │
+       155 +  │   │   │   ├── client/                # Cluster client SDK
+       156 +  │   │   │   │   ├── client.go
+       157 +  │   │   │   │   └── interceptor.go
+       158 +  │   │   │   │
+       159 +  │   │   │   └── pb/                    # Generated cluster protos
+       160 +  │   │   │       ├── cluster.pb.go
+       161 +  │   │   │       └── cluster_grpc.pb.go
+       162 +  │   │   │
+       163 +  │   │   ├── internal/                  # Private packages
+       164 +  │   │   │   ├── config/
+       165 +  │   │   │   │   ├── config.go
+       166 +  │   │   │   │   └── loader.go
+       167 +  │   │   │   │
+       168 +  │   │   │   ├── observability/         # NEW: Observability implementation
+       169 +  │   │   │   │   ├── metrics/
+       170 +  │   │   │   │   │   ├── prometheus.go
+       171 +  │   │   │   │   │   ├── raft_metrics.go
+       172 +  │   │   │   │   │   ├── cluster_metrics.go
+       173 +  │   │   │   │   │   └── vectordb_metrics.go
+       174 +  │   │   │   │   │
+       175 +  │   │   │   │   ├── logging/
+       176 +  │   │   │   │   │   ├── logger.go
+       177 +  │   │   │   │   │   ├── context.go
+       178 +  │   │   │   │   │   └── interceptor.go
+       179 +  │   │   │   │   │
+       180 +  │   │   │   │   ├── tracing/
+       181 +  │   │   │   │   │   ├── tracer.go
+       182 +  │   │   │   │   │   ├── jaeger.go
+       183 +  │   │   │   │   │   └── interceptor.go
+       184 +  │   │   │   │   │
+       185 +  │   │   │   │   └── health/
+       186 +  │   │   │   │       ├── checker.go
+       187 +  │   │   │   │       └── probes.go
+       188 +  │   │   │   │
+       189 +  │   │   │   └── vectorxlite/           # VectorXLite client wrapper
+       190 +  │   │   │       └── client.go
+       191 +  │   │   │
+       192 +  │   │   ├── configs/                   # Node configurations
+       193 +  │   │   │   ├── node1.yaml
+       194 +  │   │   │   ├── node2.yaml
+       195 +  │   │   │   └── node3.yaml
+       196 +  │   │   │
+       197 +  │   │   ├── scripts/                   # Cluster management scripts
+       198 +  │   │   │   ├── start_cluster.sh
+       199 +  │   │   │   ├── stop_cluster.sh
+       200 +  │   │   │   └── test_operations.sh
+       201 +  │   │   │
+       202 +  │   │   ├── data/                      # Runtime data (gitignored)
+       203 +  │   │   │   ├── node1/
+       204 +  │   │   │   ├── node2/
+       205 +  │   │   │   └── node3/
+       206 +  │   │   │
+       207 +  │   │   ├── logs/                      # Application logs (gitignored)
+       208 +  │   │   └── bin/                       # Compiled binaries (gitignored)
+       209 +  │   │
+       210 +  │   ├── clients/                       # Clients for Cluster gRPC API
+       211 +  │   │   ├── go/
+       212 +  │   │   │   ├── README.md
+       213 +  │   │   │   ├── go.mod
+       214 +  │   │   │   ├── go.sum
+       215 +  │   │   │   ├── client/
+       216 +  │   │   │   │   ├── client.go
+       217 +  │   │   │   │   └── interceptor.go
+       218 +  │   │   │   └── pb/
+       219 +  │   │   │       ├── cluster.pb.go
+       220 +  │   │   │       └── cluster_grpc.pb.go
+       221 +  │   │   │
+       222 +  │   │   └── python/                    # Future: Python cluster client
+       223 +  │   │       └── README.md
+       224 +  │   │
+       225 +  │   ├── examples/                      # Distributed mode examples
+       226 +  │   │   └── go/
+       227 +  │   │       ├── cluster-setup/
+       228 +  │   │       │   ├── go.mod
+       229 +  │   │       │   └── main.go
+       230 +  │   │       ├── failover-demo/
+       231 +  │   │       │   ├── go.mod
+       232 +  │   │       │   └── main.go
+       233 +  │   │       └── distributed-ops/
+       234 +  │   │           ├── go.mod
+       235 +  │   │           └── main.go
+       236 +  │   │
+       237 +  │   ├── deployments/
+       238 +  │   │   ├── docker/
+       239 +  │   │   │   ├── Dockerfile
+       240 +  │   │   │   └── docker-compose.yml     # Full 3-node cluster
+       241 +  │   │   │
+       242 +  │   │   ├── kubernetes/
+       243 +  │   │   │   ├── statefulset.yaml
+       244 +  │   │   │   ├── service.yaml
+       245 +  │   │   │   ├── configmap.yaml
+       246 +  │   │   │   └── headless-service.yaml
+       247 +  │   │   │
+       248 +  │   │   └── observability/             # Observability stack
+       249 +  │   │       ├── prometheus/
+       250 +  │   │       │   ├── prometheus.yml
+       251 +  │   │       │   └── alerts.yml
+       252 +  │   │       ├── grafana/
+       253 +  │   │       │   ├── dashboards/
+       254 +  │   │       │   │   ├── cluster-overview.json
+       255 +  │   │       │   │   ├── raft-consensus.json
+       256 +  │   │       │   │   └── vectordb-operations.json
+       257 +  │   │       │   └── datasources.yml
+       258 +  │   │       ├── loki/
+       259 +  │   │       │   └── loki-config.yml
+       260 +  │   │       ├── jaeger/
+       261 +  │   │       │   └── jaeger-config.yml
+       262 +  │   │       └── docker-compose.yml     # Full observability stack
+       263 +  │   │
+       264 +  │   └── docs/
+       265 +  │       ├── getting-started.md
+       266 +  │       ├── raft-consensus.md
+       267 +  │       ├── topology.md
+       268 +  │       ├── observability.md
+       269 +  │       ├── operations.md
+       270 +  │       └── troubleshooting.md
+       271 +  │
+       272 +  ├── proto/                             # Protocol buffer definitions (source of truth)
+       273 +  │   ├── vectorxlite/
+       274 +  │   │   ├── v1/
+       275 +  │   │   │   └── vectorxlite.proto
+       276 +  │   │   └── README.md
+       277 +  │   │
+       278 +  │   └── cluster/
+       279 +  │       ├── v1/
+       280 +  │       │   └── cluster.proto
+       281 +  │       └── README.md
+       282 +  │
+       283 +  ├── tests/                             # Integration & E2E tests
+       284 +  │   ├── integration/                   # (was: vector_xlite_tests/)
+       285 +  │   │   ├── Cargo.toml
+       286 +  │   │   ├── src/
+       287 +  │   │   └── tests/
+       288 +  │   │       ├── common/
+       289 +  │   │       ├── atomic_transaction_tests.rs
+       290 +  │   │       ├── concurrent_tests.rs
+       291 +  │   │       ├── distance_function_tests.rs
+       292 +  │   │       ├── edge_case_tests.rs
+       293 +  │   │       ├── error_handling_tests.rs
+       294 +  │   │       ├── file_storage_tests.rs
+       295 +  │   │       ├── snapshot_tests.rs
+       296 +  │   │       └── sql_helper_tests.rs
+       297 +  │   │
+       298 +  │   ├── e2e/
+       299 +  │   │   ├── embedded/                  # E2E tests for embedded mode
+       300 +  │   │   │   └── README.md
+       301 +  │   │   ├── server/                    # E2E tests for server mode
+       302 +  │   │   │   └── README.md
+       303 +  │   │   └── distributed/               # E2E tests for distributed mode
+       304 +  │   │       └── README.md
+       305 +  │   │
+       306 +  │   └── benchmarks/                    # Performance benchmarks
+       307 +  │       ├── embedded/
+       308 +  │       ├── server/
+       309 +  │       └── distributed/
+       310 +  │
+       311 +  ├── docs/                              # Comprehensive documentation
+       312 +  │   ├── README.md                      # Documentation index
+       313 +  │   ├── overview.md                    # Project overview
+       314 +  │   ├── architecture.md                # Overall architecture
+       315 +  │   ├── choosing-mode.md               # NEW: Guide to choosing deployment mode
+       316 +  │   │
+       317 +  │   ├── embedded/
+       318 +  │   │   ├── README.md
+       319 +  │   │   ├── getting-started.md
+       320 +  │   │   ├── api-reference.md
+       321 +  │   │   └── best-practices.md
+       322 +  │   │
+       323 +  │   ├── server/
+       324 +  │   │   ├── README.md
+       325 +  │   │   ├── getting-started.md
+       326 +  │   │   ├── api-reference.md
+       327 +  │   │   ├── deployment.md
+       328 +  │   │   └── client-libraries.md
+       329 +  │   │
+       330 +  │   ├── distributed/
+       331 +  │   │   ├── README.md
+       332 +  │   │   ├── getting-started.md
+       333 +  │   │   ├── raft-consensus.md
+       334 +  │   │   ├── topology.md
+       335 +  │   │   ├── observability.md
+       336 +  │   │   ├── operations.md
+       337 +  │   │   └── troubleshooting.md
+       338 +  │   │
+       339 +  │   ├── guides/
+       340 +  │   │   ├── migration-guide.md         # Migrating between modes
+       341 +  │   │   ├── performance-tuning.md
+       342 +  │   │   ├── security.md
+       343 +  │   │   └── production-checklist.md
+       344 +  │   │
+       345 +  │   └── api/
+       346 +  │       ├── vectorxlite-api.md         # VectorXLite API
+       347 +  │       └── cluster-api.md             # Cluster API
+       348 +  │
+       349 +  ├── scripts/                           # Project-wide scripts
+       350 +  │   ├── generate-protos.sh             # (was: protoc_gen.sh)
+       351 +  │   ├── build-all.sh
+       352 +  │   ├── test-all.sh
+       353 +  │   ├── run-embedded-example.sh
+       354 +  │   ├── run-server-example.sh
+       355 +  │   └── run-distributed-example.sh
+       356 +  │
+       357 +  ├── assets/                            # Project assets
+       358 +  │   ├── logo.png
+       359 +  │   ├── transparent-logo.png
+       360 +  │   └── diagrams/
+       361 +  │       ├── embedded-architecture.svg
+       362 +  │       ├── server-architecture.svg
+       363 +  │       ├── distributed-architecture.svg
+       364 +  │       └── mode-comparison.svg
+       365 +  │
+       366 +  ├── .github/
+       367 +  │   └── workflows/
+       368 +  │       ├── rust-ci.yml                # Embedded + Server tests
+       369 +  │       ├── go-ci.yml                  # Distributed tests
+       370 +  │       ├── integration-tests.yml      # Full E2E tests
+       371 +  │       └── release.yml
+       372 +  │
+       373 +  └── tools/                             # Development tools
+       374 +      ├── migrate-structure.sh           # Migration script
+       375 +      └── verify-structure.sh            # Verify new structure
+       376 +  ```
