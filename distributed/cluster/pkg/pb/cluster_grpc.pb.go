@@ -25,6 +25,7 @@ const (
 	ClusterService_Insert_FullMethodName           = "/vectorxlite.cluster.ClusterService/Insert"
 	ClusterService_Delete_FullMethodName           = "/vectorxlite.cluster.ClusterService/Delete"
 	ClusterService_Search_FullMethodName           = "/vectorxlite.cluster.ClusterService/Search"
+	ClusterService_CollectionExists_FullMethodName = "/vectorxlite.cluster.ClusterService/CollectionExists"
 	ClusterService_GetClusterInfo_FullMethodName   = "/vectorxlite.cluster.ClusterService/GetClusterInfo"
 	ClusterService_JoinCluster_FullMethodName      = "/vectorxlite.cluster.ClusterService/JoinCluster"
 	ClusterService_LeaveCluster_FullMethodName     = "/vectorxlite.cluster.ClusterService/LeaveCluster"
@@ -40,6 +41,7 @@ type ClusterServiceClient interface {
 	Delete(ctx context.Context, in *DeleteRequest, opts ...grpc.CallOption) (*DeleteResponse, error)
 	// Read operations (local or leader)
 	Search(ctx context.Context, in *SearchRequest, opts ...grpc.CallOption) (*SearchResponse, error)
+	CollectionExists(ctx context.Context, in *CollectionExistsRequest, opts ...grpc.CallOption) (*CollectionExistsResponse, error)
 	// Cluster management
 	GetClusterInfo(ctx context.Context, in *GetClusterInfoRequest, opts ...grpc.CallOption) (*ClusterInfoResponse, error)
 	JoinCluster(ctx context.Context, in *JoinClusterRequest, opts ...grpc.CallOption) (*JoinClusterResponse, error)
@@ -94,6 +96,16 @@ func (c *clusterServiceClient) Search(ctx context.Context, in *SearchRequest, op
 	return out, nil
 }
 
+func (c *clusterServiceClient) CollectionExists(ctx context.Context, in *CollectionExistsRequest, opts ...grpc.CallOption) (*CollectionExistsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CollectionExistsResponse)
+	err := c.cc.Invoke(ctx, ClusterService_CollectionExists_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *clusterServiceClient) GetClusterInfo(ctx context.Context, in *GetClusterInfoRequest, opts ...grpc.CallOption) (*ClusterInfoResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(ClusterInfoResponse)
@@ -134,6 +146,7 @@ type ClusterServiceServer interface {
 	Delete(context.Context, *DeleteRequest) (*DeleteResponse, error)
 	// Read operations (local or leader)
 	Search(context.Context, *SearchRequest) (*SearchResponse, error)
+	CollectionExists(context.Context, *CollectionExistsRequest) (*CollectionExistsResponse, error)
 	// Cluster management
 	GetClusterInfo(context.Context, *GetClusterInfoRequest) (*ClusterInfoResponse, error)
 	JoinCluster(context.Context, *JoinClusterRequest) (*JoinClusterResponse, error)
@@ -159,6 +172,9 @@ func (UnimplementedClusterServiceServer) Delete(context.Context, *DeleteRequest)
 }
 func (UnimplementedClusterServiceServer) Search(context.Context, *SearchRequest) (*SearchResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Search not implemented")
+}
+func (UnimplementedClusterServiceServer) CollectionExists(context.Context, *CollectionExistsRequest) (*CollectionExistsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CollectionExists not implemented")
 }
 func (UnimplementedClusterServiceServer) GetClusterInfo(context.Context, *GetClusterInfoRequest) (*ClusterInfoResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetClusterInfo not implemented")
@@ -262,6 +278,24 @@ func _ClusterService_Search_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ClusterService_CollectionExists_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CollectionExistsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ClusterServiceServer).CollectionExists(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ClusterService_CollectionExists_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ClusterServiceServer).CollectionExists(ctx, req.(*CollectionExistsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _ClusterService_GetClusterInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetClusterInfoRequest)
 	if err := dec(in); err != nil {
@@ -338,6 +372,10 @@ var ClusterService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Search",
 			Handler:    _ClusterService_Search_Handler,
+		},
+		{
+			MethodName: "CollectionExists",
+			Handler:    _ClusterService_CollectionExists_Handler,
 		},
 		{
 			MethodName: "GetClusterInfo",

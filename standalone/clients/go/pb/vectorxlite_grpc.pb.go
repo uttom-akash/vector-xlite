@@ -22,6 +22,7 @@ const (
 	VectorXLitePB_CreateCollection_FullMethodName = "/vectorxlite_pb.VectorXLitePB/CreateCollection"
 	VectorXLitePB_Insert_FullMethodName           = "/vectorxlite_pb.VectorXLitePB/Insert"
 	VectorXLitePB_Search_FullMethodName           = "/vectorxlite_pb.VectorXLitePB/Search"
+	VectorXLitePB_CollectionExists_FullMethodName = "/vectorxlite_pb.VectorXLitePB/CollectionExists"
 	VectorXLitePB_ExportSnapshot_FullMethodName   = "/vectorxlite_pb.VectorXLitePB/ExportSnapshot"
 	VectorXLitePB_ImportSnapshot_FullMethodName   = "/vectorxlite_pb.VectorXLitePB/ImportSnapshot"
 )
@@ -33,6 +34,7 @@ type VectorXLitePBClient interface {
 	CreateCollection(ctx context.Context, in *CollectionConfigPB, opts ...grpc.CallOption) (*EmptyPB, error)
 	Insert(ctx context.Context, in *InsertPointPB, opts ...grpc.CallOption) (*EmptyPB, error)
 	Search(ctx context.Context, in *SearchPointPB, opts ...grpc.CallOption) (*SearchResponsePB, error)
+	CollectionExists(ctx context.Context, in *CollectionExistsRequestPB, opts ...grpc.CallOption) (*CollectionExistsResponsePB, error)
 	// Snapshot operations for Raft FSM integration
 	ExportSnapshot(ctx context.Context, in *ExportSnapshotRequestPB, opts ...grpc.CallOption) (grpc.ServerStreamingClient[SnapshotChunkPB], error)
 	ImportSnapshot(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[SnapshotChunkPB, ImportSnapshotResponsePB], error)
@@ -70,6 +72,16 @@ func (c *vectorXLitePBClient) Search(ctx context.Context, in *SearchPointPB, opt
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(SearchResponsePB)
 	err := c.cc.Invoke(ctx, VectorXLitePB_Search_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *vectorXLitePBClient) CollectionExists(ctx context.Context, in *CollectionExistsRequestPB, opts ...grpc.CallOption) (*CollectionExistsResponsePB, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CollectionExistsResponsePB)
+	err := c.cc.Invoke(ctx, VectorXLitePB_CollectionExists_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -115,6 +127,7 @@ type VectorXLitePBServer interface {
 	CreateCollection(context.Context, *CollectionConfigPB) (*EmptyPB, error)
 	Insert(context.Context, *InsertPointPB) (*EmptyPB, error)
 	Search(context.Context, *SearchPointPB) (*SearchResponsePB, error)
+	CollectionExists(context.Context, *CollectionExistsRequestPB) (*CollectionExistsResponsePB, error)
 	// Snapshot operations for Raft FSM integration
 	ExportSnapshot(*ExportSnapshotRequestPB, grpc.ServerStreamingServer[SnapshotChunkPB]) error
 	ImportSnapshot(grpc.ClientStreamingServer[SnapshotChunkPB, ImportSnapshotResponsePB]) error
@@ -136,6 +149,9 @@ func (UnimplementedVectorXLitePBServer) Insert(context.Context, *InsertPointPB) 
 }
 func (UnimplementedVectorXLitePBServer) Search(context.Context, *SearchPointPB) (*SearchResponsePB, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Search not implemented")
+}
+func (UnimplementedVectorXLitePBServer) CollectionExists(context.Context, *CollectionExistsRequestPB) (*CollectionExistsResponsePB, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CollectionExists not implemented")
 }
 func (UnimplementedVectorXLitePBServer) ExportSnapshot(*ExportSnapshotRequestPB, grpc.ServerStreamingServer[SnapshotChunkPB]) error {
 	return status.Errorf(codes.Unimplemented, "method ExportSnapshot not implemented")
@@ -218,6 +234,24 @@ func _VectorXLitePB_Search_Handler(srv interface{}, ctx context.Context, dec fun
 	return interceptor(ctx, in, info, handler)
 }
 
+func _VectorXLitePB_CollectionExists_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CollectionExistsRequestPB)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(VectorXLitePBServer).CollectionExists(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: VectorXLitePB_CollectionExists_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(VectorXLitePBServer).CollectionExists(ctx, req.(*CollectionExistsRequestPB))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _VectorXLitePB_ExportSnapshot_Handler(srv interface{}, stream grpc.ServerStream) error {
 	m := new(ExportSnapshotRequestPB)
 	if err := stream.RecvMsg(m); err != nil {
@@ -254,6 +288,10 @@ var VectorXLitePB_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Search",
 			Handler:    _VectorXLitePB_Search_Handler,
+		},
+		{
+			MethodName: "CollectionExists",
+			Handler:    _VectorXLitePB_CollectionExists_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

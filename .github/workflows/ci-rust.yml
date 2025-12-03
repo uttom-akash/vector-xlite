@@ -22,16 +22,16 @@ jobs:
         run : cargo build --release
         working-directory: ./embedded/core
 
-      - name: Build Vector XLite Tests
+      - name: Build Embedded Tests
         run : cargo build --release
-        working-directory: ./tests/integration
+        working-directory: ./tests/embedded
 
       - name: Install cargo NextTest
         run : cargo install cargo-nextest
 
-      - name: Run Vector XLite Tests
+      - name: Run Embedded Tests
         run : cargo nextest run --no-fail-fast --jobs=1
-        working-directory: ./tests/integration
+        working-directory: ./tests/embedded
 
       - name: Build Vector XLite Examples
         run : cargo build --release

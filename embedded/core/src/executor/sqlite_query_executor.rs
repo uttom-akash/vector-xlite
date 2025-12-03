@@ -59,4 +59,17 @@ impl QueryExecutor for SqliteQueryExecutor {
 
         Ok(rows)
     }
+
+    fn execute_collection_exists_query(&self, query_plan: QueryPlan) -> Result<bool, VecXError> {
+        let conn = self.conn_pool.get()?;
+
+        let count: i64 = conn.query_row(
+            &query_plan.sql,
+            rusqlite::params_from_iter(query_plan.params),
+            |row| row.get(0),
+        )?;
+
+        // If any table exists (count >= 1), the collection is considered to exist
+        Ok(count >= 1)
+    }
 }

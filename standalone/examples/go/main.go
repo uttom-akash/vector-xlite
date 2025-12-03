@@ -23,21 +23,37 @@ func main() {
 
 	defer client.Close()
 
-	// 1) Create collection request
-	// comment: build a CollectionConfigPB; fields mirror your proto schema.
-	collectionConfig, err := types.NewCollectionConfigBuilder().
-		CollectionName("person").
-		Distance(types.DistanceCosine).
-		VectorDimension(4).
-		PayloadTableSchema("create table person (rowid integer primary key, name text)").
-		// IndexFilePath("").
-		Build()
-
-	if err := client.CreateCollection(ctx, collectionConfig); err != nil {
-		log.Fatalf("CreateCollection error: %v", err)
+	// Check if collection exists before creating
+	collectionName := "person"
+	exists, err := client.CollectionExists(ctx, collectionName)
+	if err != nil {
+		log.Fatalf("CollectionExists error: %v", err)
 	}
 
-	fmt.Println("collection created")
+	if exists {
+		fmt.Printf("Collection '%s' already exists, skipping creation\n", collectionName)
+	} else {
+		fmt.Printf("Collection '%s' does not exist, creating...\n", collectionName)
+
+		// 1) Create collection request
+		// comment: build a CollectionConfigPB; fields mirror your proto schema.
+		collectionConfig, err := types.NewCollectionConfigBuilder().
+			CollectionName(collectionName).
+			Distance(types.DistanceCosine).
+			VectorDimension(4).
+			PayloadTableSchema("create table person (rowid integer primary key, name text)").
+			// IndexFilePath("").
+			Build()
+		if err != nil {
+			log.Fatalf("Build collection config error: %v", err)
+		}
+
+		if err := client.CreateCollection(ctx, collectionConfig); err != nil {
+			log.Fatalf("CreateCollection error: %v", err)
+		}
+
+		fmt.Println("collection created")
+	}
 
 	// 2) Insert a point
 	// comment: InsertPointPB.payload_insert_query should use ?1 placeholder for rowid

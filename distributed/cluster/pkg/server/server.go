@@ -37,6 +37,7 @@ type ClusterServer struct {
 	onInsert           func(ctx context.Context, req *pb.InsertRequest) error
 	onDelete           func(ctx context.Context, req *pb.DeleteRequest) error
 	onSearch           func(ctx context.Context, req *pb.SearchRequest) (*pb.SearchResponse, error)
+	onCollectionExists func(ctx context.Context, req *pb.CollectionExistsRequest) (*pb.CollectionExistsResponse, error)
 }
 
 // ClusterServerConfig holds configuration for the ClusterServer
@@ -48,6 +49,7 @@ type ClusterServerConfig struct {
 	OnInsert           func(ctx context.Context, req *pb.InsertRequest) error
 	OnDelete           func(ctx context.Context, req *pb.DeleteRequest) error
 	OnSearch           func(ctx context.Context, req *pb.SearchRequest) (*pb.SearchResponse, error)
+	OnCollectionExists func(ctx context.Context, req *pb.CollectionExistsRequest) (*pb.CollectionExistsResponse, error)
 }
 
 // NewClusterServer creates a new ClusterServer instance
@@ -60,6 +62,7 @@ func NewClusterServer(cfg ClusterServerConfig) *ClusterServer {
 		onInsert:           cfg.OnInsert,
 		onDelete:           cfg.OnDelete,
 		onSearch:           cfg.OnSearch,
+		onCollectionExists: cfg.OnCollectionExists,
 	}
 }
 
@@ -135,6 +138,15 @@ func (s *ClusterServer) Search(ctx context.Context, req *pb.SearchRequest) (*pb.
 	}
 
 	return &pb.SearchResponse{Results: []*pb.SearchResultItem{}}, nil
+}
+
+// CollectionExists checks if a collection exists (read operation - can be handled by any node)
+func (s *ClusterServer) CollectionExists(ctx context.Context, req *pb.CollectionExistsRequest) (*pb.CollectionExistsResponse, error) {
+	if s.onCollectionExists != nil {
+		return s.onCollectionExists(ctx, req)
+	}
+
+	return &pb.CollectionExistsResponse{Exists: false}, nil
 }
 
 // GetClusterInfo returns information about the cluster
