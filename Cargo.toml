@@ -3,7 +3,7 @@ members = [
     "embedded/core",
     "embedded/examples/rust",
     "standalone/server",
-    "tests/integration",
+    "tests/embedded",
 ]
 resolver = "2"
 

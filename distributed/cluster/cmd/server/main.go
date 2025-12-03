@@ -187,6 +187,20 @@ func main() {
 
 			return &pb.SearchResponse{Results: results}, nil
 		},
+
+		OnCollectionExists: func(ctx context.Context, req *pb.CollectionExistsRequest) (*pb.CollectionExistsResponse, error) {
+			log.Printf("[%s] Checking if collection exists: %s", *nodeID, req.CollectionName)
+
+			client := vxRaftNode.Fsm.VectorClient
+			exists, err := client.CollectionExists(ctx, req.CollectionName)
+			if err != nil {
+				log.Printf("[%s] CollectionExists error: %v", *nodeID, err)
+				return &pb.CollectionExistsResponse{Exists: false}, fmt.Errorf("collection exists check error: %w", err)
+			}
+
+			log.Printf("[%s] Collection %s exists: %v", *nodeID, req.CollectionName, exists)
+			return &pb.CollectionExistsResponse{Exists: exists}, nil
+		},
 	}
 
 	// Create cluster server

@@ -100,3 +100,18 @@ func (c *Client) Search(ctx context.Context, q *types.SearchPoint) (*types.Searc
 	}
 	return resp, nil
 }
+
+// CollectionExists checks if a collection with the given name exists.
+func (c *Client) CollectionExists(ctx context.Context, collectionName string) (bool, error) {
+	if collectionName == "" {
+		return false, errors.New("collection name cannot be empty")
+	}
+	pbReq := &pb.CollectionExistsRequestPB{
+		CollectionName: collectionName,
+	}
+	pbResp, err := c.pbClient.CollectionExists(ctx, pbReq)
+	if err != nil {
+		return false, err
+	}
+	return pbResp.Exists, nil
+}

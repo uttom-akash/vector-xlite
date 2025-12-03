@@ -14,9 +14,9 @@ func (d DistanceFunction) String() string {
 	case DistanceCosine:
 		return "Cosine"
 	case DistanceEuclidean:
-		return "Euclidean"
+		return "L2"
 	case DistanceDot:
-		return "Dot"
+		return "IP"
 	default:
 		return "Unknown"
 	}

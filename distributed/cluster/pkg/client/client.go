@@ -120,6 +120,11 @@ func (c *ClusterClient) Search(ctx context.Context, req *pb.SearchRequest) (*pb.
 	return c.client.Search(ctx, req)
 }
 
+// CollectionExists checks if a collection exists
+func (c *ClusterClient) CollectionExists(ctx context.Context, req *pb.CollectionExistsRequest) (*pb.CollectionExistsResponse, error) {
+	return c.client.CollectionExists(ctx, req)
+}
+
 // ============================================================================
 // Cluster Management Operations
 // ============================================================================

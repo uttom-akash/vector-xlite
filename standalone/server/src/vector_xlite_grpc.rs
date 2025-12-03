@@ -98,6 +98,20 @@ impl VectorXLitePb for VectorXLiteGrpc {
         }))
     }
 
+    async fn collection_exists(
+        &self,
+        req: Request<pb::CollectionExistsRequestPb>,
+    ) -> Result<Response<pb::CollectionExistsResponsePb>, Status> {
+        let collection_name = req.into_inner().collection_name;
+
+        let exists = self
+            .vxlite
+            .collection_exists(&collection_name)
+            .map_err(|e| Status::internal(e.to_string()))?;
+
+        Ok(Response::new(pb::CollectionExistsResponsePb { exists }))
+    }
+
     /// Streaming response type for export_snapshot
     type ExportSnapshotStream = ReceiverStream<Result<pb::SnapshotChunkPb, Status>>;
 

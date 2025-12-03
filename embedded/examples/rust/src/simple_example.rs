@@ -1,8 +1,18 @@
 use vector_xlite::{VectorXLite, types::*};
 
 pub fn run_simple_example(vlite: &VectorXLite) {
+    // Check if collection already exists before creating
+    let collection_name = "person";
+    let exists = vlite.collection_exists(collection_name).unwrap();
+
+    if exists {
+        println!("Collection '{}' already exists, skipping creation.", collection_name);
+    } else {
+        println!("Collection '{}' does not exist, creating...", collection_name);
+    }
+
     let config = CollectionConfigBuilder::default()
-        .collection_name("person")
+        .collection_name(collection_name)
         .distance(DistanceFunction::Cosine)
         .vector_dimension(4)
         .payload_table_schema("create table person (rowid integer primary key, name text)")
@@ -11,6 +21,7 @@ pub fn run_simple_example(vlite: &VectorXLite) {
 
     match vlite.create_collection(config) {
         Ok(_) => {
+            println!("Collection '{}' created successfully.", collection_name);
             let points = vec![
                 InsertPoint::builder()
                     .collection_name("person")
@@ -59,7 +70,16 @@ pub fn run_simple_example(vlite: &VectorXLite) {
             let results = vlite.search(search_point).unwrap();
 
             println!("Search results: {:?}", results);
+
+            // Verify collection exists after operations
+            let still_exists = vlite.collection_exists(collection_name).unwrap();
+            println!("Collection '{}' exists after operations: {}", collection_name, still_exists);
         }
-        Err(e) => println!("Error creating collection: {:?}", e),
+        Err(e) => {
+            println!("Error creating collection: {:?}", e);
+            // Even if creation fails, check if collection partially exists
+            let exists_on_error = vlite.collection_exists(collection_name).unwrap();
+            println!("Collection '{}' exists after error: {}", collection_name, exists_on_error);
+        }
     }
 }

@@ -72,6 +72,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     db.create_collection(config)?;
 
+    // 2.5. Check if collection exists
+    if db.collection_exists("products")? {
+        println!("Collection 'products' already exists!");
+    }
+
     // 3. Insert vectors
     let embedding = vec![0.1; 384];
     let point = InsertPoint::builder()
@@ -113,7 +118,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 ### Collections
 
-A collection combines a vector index with a payload table:
+A collection combines a vector index with a payload table.
+
+#### Creating Collections
 
 ```rust
 let config = CollectionConfigBuilder::default()
@@ -133,6 +140,40 @@ let config = CollectionConfigBuilder::default()
     .index_file_path("/data/docs.idx")  // Optional: persist HNSW index
     .build()?;
 ```
+
+#### Checking Collection Existence
+
+Before creating or using a collection, you can check if it exists:
+
+```rust
+// Check if a collection exists
+if db.collection_exists("documents")? {
+    println!("Collection exists!");
+} else {
+    println!("Collection does not exist, creating...");
+    db.create_collection(config)?;
+}
+
+// Prevent duplicate collection creation
+let collection_name = "products";
+if !db.collection_exists(collection_name)? {
+    let config = CollectionConfigBuilder::default()
+        .collection_name(collection_name)
+        .vector_dimension(384)
+        .build()?;
+
+    db.create_collection(config)?;
+    println!("Collection created successfully");
+} else {
+    println!("Collection already exists, skipping creation");
+}
+```
+
+**Important Notes:**
+- Collection names are case-sensitive
+- Empty collection names return an error
+- This check is atomic and thread-safe
+- Useful for idempotent initialization code
 
 ### Distance Functions
 
@@ -266,10 +307,14 @@ cargo run --release
 ### Main Types
 
 - **`VectorXLite`** - Main database interface
+  - `create_collection(config)` - Create a new collection
+  - `collection_exists(name)` - Check if a collection exists
+  - `insert(point)` - Insert a vector with payload
+  - `search(query)` - Search for similar vectors
 - **`CollectionConfigBuilder`** - Configure collections
 - **`InsertPoint`** - Insert operations
 - **`SearchPoint`** - Search operations
-- **`DistanceFunction`** - Similarity metrics
+- **`DistanceFunction`** - Similarity metrics (Cosine, L2, IP)
 
 ### Full documentation
 
