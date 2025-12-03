@@ -36,18 +36,18 @@ type ClusterServer struct {
 	onCreateCollection func(ctx context.Context, req *pb.CreateCollectionRequest) error
 	onInsert           func(ctx context.Context, req *pb.InsertRequest) error
 	onDelete           func(ctx context.Context, req *pb.DeleteRequest) error
+	onDeleteCollection func(ctx context.Context, req *pb.DeleteCollectionRequest) error
 	onSearch           func(ctx context.Context, req *pb.SearchRequest) (*pb.SearchResponse, error)
 	onCollectionExists func(ctx context.Context, req *pb.CollectionExistsRequest) (*pb.CollectionExistsResponse, error)
 }
 
 // ClusterServerConfig holds configuration for the ClusterServer
 type ClusterServerConfig struct {
-	RaftNode ClusterNode
-	// NodeID             string
-	// NodeAddr           string
+	RaftNode           ClusterNode
 	OnCreateCollection func(ctx context.Context, req *pb.CreateCollectionRequest) error
 	OnInsert           func(ctx context.Context, req *pb.InsertRequest) error
 	OnDelete           func(ctx context.Context, req *pb.DeleteRequest) error
+	OnDeleteCollection func(ctx context.Context, req *pb.DeleteCollectionRequest) error
 	OnSearch           func(ctx context.Context, req *pb.SearchRequest) (*pb.SearchResponse, error)
 	OnCollectionExists func(ctx context.Context, req *pb.CollectionExistsRequest) (*pb.CollectionExistsResponse, error)
 }
@@ -55,12 +55,11 @@ type ClusterServerConfig struct {
 // NewClusterServer creates a new ClusterServer instance
 func NewClusterServer(cfg ClusterServerConfig) *ClusterServer {
 	return &ClusterServer{
-		raftNode: cfg.RaftNode,
-		// nodeID:             cfg.NodeID,
-		// nodeAddr:           cfg.NodeAddr,
+		raftNode:           cfg.RaftNode,
 		onCreateCollection: cfg.OnCreateCollection,
 		onInsert:           cfg.OnInsert,
 		onDelete:           cfg.OnDelete,
+		onDeleteCollection: cfg.OnDeleteCollection,
 		onSearch:           cfg.OnSearch,
 		onCollectionExists: cfg.OnCollectionExists,
 	}
@@ -128,6 +127,24 @@ func (s *ClusterServer) Delete(ctx context.Context, req *pb.DeleteRequest) (*pb.
 	return &pb.DeleteResponse{
 		Success: true,
 		Message: "deleted successfully",
+	}, nil
+}
+
+// DeleteCollection handles collection deletion (write operation)
+// Note: Leadership check is handled by LeaderRedirectInterceptor
+func (s *ClusterServer) DeleteCollection(ctx context.Context, req *pb.DeleteCollectionRequest) (*pb.DeleteCollectionResponse, error) {
+	if s.onDeleteCollection != nil {
+		if err := s.onDeleteCollection(ctx, req); err != nil {
+			return &pb.DeleteCollectionResponse{
+				Success: false,
+				Message: err.Error(),
+			}, err
+		}
+	}
+
+	return &pb.DeleteCollectionResponse{
+		Success: true,
+		Message: "deleted collection successfully",
 	}, nil
 }
 

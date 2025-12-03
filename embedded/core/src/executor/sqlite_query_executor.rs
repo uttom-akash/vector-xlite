@@ -42,6 +42,37 @@ impl QueryExecutor for SqliteQueryExecutor {
         Ok(())
     }
 
+    /// Executes a delete operation atomically.
+    ///
+    /// Removes the vector from both the payload table and the HNSW index
+    /// within a single transaction, ensuring consistency.
+    fn execute_delete_query(&self, query_plans: Vec<QueryPlan>) -> rusqlite::Result<(), VecXError> {
+        let mut conn = self.conn_pool.get()?;
+        let trx = conn.transaction()?;
+
+        for plan in &query_plans {
+            trx.execute(&plan.sql, rusqlite::params_from_iter(&plan.params))?;
+        }
+
+        trx.commit()?;
+        Ok(())
+    }
+
+    fn execute_delete_collection_query(
+        &self,
+        query_plans: Vec<QueryPlan>,
+    ) -> rusqlite::Result<(), VecXError> {
+        let mut conn = self.conn_pool.get()?;
+        let trx = conn.transaction()?;
+
+        for plan in &query_plans {
+            trx.execute(&plan.sql, rusqlite::params_from_iter(&plan.params))?;
+        }
+
+        trx.commit()?;
+        Ok(())
+    }
+
     fn execute_search_query(
         &self,
         query_plan: QueryPlan,

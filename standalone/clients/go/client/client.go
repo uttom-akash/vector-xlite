@@ -71,6 +71,30 @@ func (c *Client) Insert(ctx context.Context, p *types.InsertPoint) error {
 	return err
 }
 
+// Delete sends a Delete request to the server.
+func (c *Client) Delete(ctx context.Context, collectionName string, id int64) (*pb.DeleteResponsePB, error) {
+	if collectionName == "" {
+		return nil, errors.New("collection name cannot be empty")
+	}
+	pbReq := &pb.DeleteRequestPB{
+		CollectionName: collectionName,
+		Id:             id,
+	}
+	return c.pbClient.Delete(ctx, pbReq)
+}
+
+// DeleteCollection sends a DeleteCollection request to the server.
+func (c *Client) DeleteCollection(ctx context.Context, collectionName string) (*pb.DeleteResponsePB, error) {
+	if collectionName == "" {
+		return nil, errors.New("collection name cannot be empty")
+	}
+	pbReq := &pb.DeleteCollectionRequestPB{
+		CollectionName: collectionName,
+	}
+	return c.pbClient.DeleteCollection(ctx, pbReq)
+}
+
+
 // Search sends a SearchPoint request and converts the response.
 func (c *Client) Search(ctx context.Context, q *types.SearchPoint) (*types.SearchResponse, error) {
 	if q == nil {

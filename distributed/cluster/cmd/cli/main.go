@@ -30,6 +30,10 @@ func main() {
 		insertCmd()
 	case "search":
 		searchCmd()
+	case "delete":
+		deleteCmd()
+	case "delete-collection":
+		deleteCollectionCmd()
 	case "join":
 		joinCmd()
 	case "info":
@@ -51,6 +55,8 @@ func printUsage() {
 	fmt.Println("  create-collection  Create a new vector collection")
 	fmt.Println("  insert             Insert a vector into a collection")
 	fmt.Println("  search             Search for similar vectors")
+	fmt.Println("  delete             Delete a vector from a collection")
+	fmt.Println("  delete-collection  Delete a collection")
 	fmt.Println("  join               Join a node to the cluster")
 	fmt.Println("  info               Get cluster information")
 	fmt.Println()
@@ -58,6 +64,8 @@ func printUsage() {
 	fmt.Println("  client create-collection -addr :5002 -name users -dim 128 -schema \"create table users(rowid integer primary key, name text)\"")
 	fmt.Println("  client insert -addr :5002 -name users -id 1 -vector \"1.0,2.0,3.0\" -query \"insert into users(name) values ('Alice')\"")
 	fmt.Println("  client search -addr :5002 -name users -vector \"1.0,2.0,3.0\" -k 5 -query \"select rowid, name from users\"")
+	fmt.Println("  client delete -addr :5002 -name users -id 1")
+	fmt.Println("  client delete-collection -addr :5002 -name users")
 	fmt.Println("  client join -addr :5002 -node-id node2 -node-addr 127.0.0.1:5021")
 	fmt.Println("  client info -addr :5002")
 }
@@ -198,6 +206,68 @@ func searchCmd() {
 			}
 		}
 	}
+}
+
+func deleteCmd() {
+	fs := flag.NewFlagSet("delete", flag.ExitOnError)
+	addr := fs.String("addr", ":5002", "Cluster server address")
+	name := fs.String("name", "", "Collection name")
+	id := fs.Int64("id", 0, "Vector ID to delete")
+
+	fs.Parse(os.Args[2:])
+
+	if *name == "" || *id == 0 {
+		log.Fatal("Collection name and id are required")
+	}
+
+	clusterClient, err := client.NewClusterClientSimple(*addr)
+	if err != nil {
+		log.Fatalf("Failed to connect to cluster at %s: %v", *addr, err)
+	}
+	defer clusterClient.Close()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	resp, err := clusterClient.Delete(ctx, &pb.DeleteRequest{
+		CollectionName: *name,
+		Id:             *id,
+	})
+	if err != nil {
+		log.Fatalf("Failed to delete: %v", err)
+	}
+
+	fmt.Printf("Success: %v\nMessage: %s\n", resp.Success, resp.Message)
+}
+
+func deleteCollectionCmd() {
+	fs := flag.NewFlagSet("delete-collection", flag.ExitOnError)
+	addr := fs.String("addr", ":5002", "Cluster server address")
+	name := fs.String("name", "", "Collection name to delete")
+
+	fs.Parse(os.Args[2:])
+
+	if *name == "" {
+		log.Fatal("Collection name is required")
+	}
+
+	clusterClient, err := client.NewClusterClientSimple(*addr)
+	if err != nil {
+		log.Fatalf("Failed to connect to cluster at %s: %v", *addr, err)
+	}
+	defer clusterClient.Close()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	resp, err := clusterClient.DeleteCollection(ctx, &pb.DeleteCollectionRequest{
+		CollectionName: *name,
+	})
+	if err != nil {
+		log.Fatalf("Failed to delete collection: %v", err)
+	}
+
+	fmt.Printf("Success: %v\nMessage: %s\n", resp.Success, resp.Message)
 }
 
 func joinCmd() {

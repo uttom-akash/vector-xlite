@@ -310,6 +310,8 @@ cargo run --release
   - `create_collection(config)` - Create a new collection
   - `collection_exists(name)` - Check if a collection exists
   - `insert(point)` - Insert a vector with payload
+  - `delete(point)` - Delete a vector from a collection
+  - `delete_collection(collection)` - Delete an entire collection
   - `search(query)` - Search for similar vectors
 - **`CollectionConfigBuilder`** - Configure collections
 - **`InsertPoint`** - Insert operations
