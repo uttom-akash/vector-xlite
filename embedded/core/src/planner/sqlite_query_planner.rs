@@ -185,4 +185,23 @@ impl QueryPlanner for SqliteQueryPlanner {
             post_process: Some(Box::new(parse_row_to_map)),
         })
     }
+
+    fn plan_collection_exists_query(&self, collection_name: &str) -> Result<QueryPlan, VecXError> {
+        // Check if both the payload table and the virtual vector table exist
+        let virtual_table_name = get_vector_table_name(collection_name);
+
+        // Query to check if both tables exist in sqlite_master
+        let sql = format!(
+            "SELECT COUNT(*) as count FROM sqlite_master WHERE type='table' AND name IN (?, ?)"
+        );
+
+        Ok(QueryPlan {
+            sql,
+            params: vec![
+                Box::new(collection_name.to_string()),
+                Box::new(virtual_table_name),
+            ],
+            post_process: None,
+        })
+    }
 }

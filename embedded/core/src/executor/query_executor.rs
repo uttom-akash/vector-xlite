@@ -8,4 +8,5 @@ pub(crate) trait QueryExecutor: Send + Sync {
         &self,
         query_plan: QueryPlan,
     ) -> Result<Vec<std::collections::HashMap<String, String>>, VecXError>;
+    fn execute_collection_exists_query(&self, query_plan: QueryPlan) -> Result<bool, VecXError>;
 }
