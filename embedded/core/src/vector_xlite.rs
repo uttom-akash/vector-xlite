@@ -91,4 +91,9 @@ impl VectorXLite {
 
         self.query_executor.execute_collection_exists_query(query_plan)
     }
+
+    pub fn delete(&self, delete_point: DeletePoint) -> Result<(), VecXError> {
+        let delete_query_plan = self.query_planner.plan_delete_query(delete_point)?;
+        self.query_executor.execute_delete_query(delete_query_plan)
+    }
 }

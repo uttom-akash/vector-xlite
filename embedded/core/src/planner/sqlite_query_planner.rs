@@ -1,7 +1,7 @@
 use crate::error::VecXError;
 use crate::helper::*;
 use crate::planner::query_planner::QueryPlanner;
-use crate::types::{CollectionConfig, InsertPoint, QueryPlan, SearchPoint};
+use crate::types::{CollectionConfig, DeletePoint, InsertPoint, QueryPlan, SearchPoint};
 use r2d2::Pool;
 use r2d2_sqlite::SqliteConnectionManager;
 
@@ -92,6 +92,44 @@ impl QueryPlanner for SqliteQueryPlanner {
         query_plans.push(QueryPlan {
             sql: insert_query,
             params: vec![Box::new(create_point.id), Box::new(vector_json.clone())],
+            post_process: None,
+        });
+
+        Ok(query_plans)
+    }
+
+    /// Plans a delete operation for removing a vector from the collection.
+    ///
+    /// This creates query plans to atomically delete:
+    /// 1. The row from the payload table
+    /// 2. The vector from the HNSW index (virtual table)
+    ///
+    /// Both operations are executed in a transaction to ensure consistency.
+    fn plan_delete_query(&self, delete_point: DeletePoint) -> Result<Vec<QueryPlan>, VecXError> {
+        let mut query_plans: Vec<QueryPlan> = Vec::new();
+
+        // Delete from payload table
+        let payload_delete_sql = format!(
+            "DELETE FROM {} WHERE rowid = ?",
+            delete_point.collection_name
+        );
+
+        query_plans.push(QueryPlan {
+            sql: payload_delete_sql,
+            params: vec![Box::new(delete_point.id)],
+            post_process: None,
+        });
+
+        // Delete from vector table (HNSW index)
+        let virtual_table_name = get_vector_table_name(delete_point.collection_name.as_str());
+        let vector_delete_sql = format!(
+            "DELETE FROM {} WHERE rowid = ?",
+            virtual_table_name
+        );
+
+        query_plans.push(QueryPlan {
+            sql: vector_delete_sql,
+            params: vec![Box::new(delete_point.id)],
             post_process: None,
         });
 
