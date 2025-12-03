@@ -92,6 +92,12 @@ func main() {
 		}
 	}
 
+	// 4) Delete and Search
+	deleteAndSearch(ctx, client)
+
+	// 5) Delete Collection
+	deleteCollection(ctx, client)
+
 	// Example 1: Export snapshot synchronously (simple use case)
 	fmt.Println("=== Example 1: Synchronous Export ===")
 	syncExportExample(ctx, client)
@@ -104,6 +110,51 @@ func main() {
 	fmt.Println("\n=== Example 3: Import Snapshot ===")
 	importExample(ctx, client)
 }
+
+func deleteAndSearch(ctx context.Context, c *client.Client) {
+	fmt.Println("\n=== Delete and Search ===")
+	_, err := c.Delete(ctx, "person", 1)
+	if err != nil {
+		log.Fatalf("Delete error: %v", err)
+	}
+	fmt.Println("deleted point")
+
+	searchReq, err := types.NewSearchPointBuilder().
+		CollectionName("person").
+		Vector([]float32{0.9, 0.8, 0.7, 0.6}).
+		TopK(5).
+		PayloadSearchQuery("select rowid, name from person").
+		Build()
+
+	resp, err := c.Search(ctx, searchReq)
+	if err != nil {
+		log.Fatalf("Search error: %v", err)
+	}
+
+	fmt.Println("Search results after delete:")
+	for i, item := range resp.Results {
+		fmt.Printf("rank=%d rowid=%d distance=%f\n", i+1, item.Rowid, item.Distance)
+		for _, kv := range item.Payload {
+			fmt.Printf("  %s: %s\n", kv.Key, kv.Value)
+		}
+	}
+}
+
+func deleteCollection(ctx context.Context, c *client.Client) {
+	fmt.Println("\n=== Delete Collection ===")
+	_, err := c.DeleteCollection(ctx, "person")
+	if err != nil {
+		log.Fatalf("Delete collection error: %v", err)
+	}
+	fmt.Println("deleted collection")
+
+	exists, err := c.CollectionExists(ctx, "person")
+	if err != nil {
+		log.Fatalf("CollectionExists error: %v", err)
+	}
+	fmt.Printf("Collection 'person' exists: %v\n", exists)
+}
+
 
 // syncExportExample demonstrates synchronous snapshot export
 func syncExportExample(ctx context.Context, c *client.Client) {

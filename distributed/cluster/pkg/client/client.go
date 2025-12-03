@@ -111,6 +111,11 @@ func (c *ClusterClient) Delete(ctx context.Context, req *pb.DeleteRequest) (*pb.
 	return c.client.Delete(ctx, req)
 }
 
+// DeleteCollection deletes a collection
+func (c *ClusterClient) DeleteCollection(ctx context.Context, req *pb.DeleteCollectionRequest) (*pb.DeleteCollectionResponse, error) {
+	return c.client.DeleteCollection(ctx, req)
+}
+
 // ============================================================================
 // Read Operations (can be served by any node)
 // ============================================================================

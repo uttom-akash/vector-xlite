@@ -24,6 +24,7 @@ const (
 	ClusterService_CreateCollection_FullMethodName = "/vectorxlite.cluster.ClusterService/CreateCollection"
 	ClusterService_Insert_FullMethodName           = "/vectorxlite.cluster.ClusterService/Insert"
 	ClusterService_Delete_FullMethodName           = "/vectorxlite.cluster.ClusterService/Delete"
+	ClusterService_DeleteCollection_FullMethodName = "/vectorxlite.cluster.ClusterService/DeleteCollection"
 	ClusterService_Search_FullMethodName           = "/vectorxlite.cluster.ClusterService/Search"
 	ClusterService_CollectionExists_FullMethodName = "/vectorxlite.cluster.ClusterService/CollectionExists"
 	ClusterService_GetClusterInfo_FullMethodName   = "/vectorxlite.cluster.ClusterService/GetClusterInfo"
@@ -39,6 +40,7 @@ type ClusterServiceClient interface {
 	CreateCollection(ctx context.Context, in *CreateCollectionRequest, opts ...grpc.CallOption) (*CreateCollectionResponse, error)
 	Insert(ctx context.Context, in *InsertRequest, opts ...grpc.CallOption) (*InsertResponse, error)
 	Delete(ctx context.Context, in *DeleteRequest, opts ...grpc.CallOption) (*DeleteResponse, error)
+	DeleteCollection(ctx context.Context, in *DeleteCollectionRequest, opts ...grpc.CallOption) (*DeleteCollectionResponse, error)
 	// Read operations (local or leader)
 	Search(ctx context.Context, in *SearchRequest, opts ...grpc.CallOption) (*SearchResponse, error)
 	CollectionExists(ctx context.Context, in *CollectionExistsRequest, opts ...grpc.CallOption) (*CollectionExistsResponse, error)
@@ -80,6 +82,16 @@ func (c *clusterServiceClient) Delete(ctx context.Context, in *DeleteRequest, op
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(DeleteResponse)
 	err := c.cc.Invoke(ctx, ClusterService_Delete_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *clusterServiceClient) DeleteCollection(ctx context.Context, in *DeleteCollectionRequest, opts ...grpc.CallOption) (*DeleteCollectionResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DeleteCollectionResponse)
+	err := c.cc.Invoke(ctx, ClusterService_DeleteCollection_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -144,6 +156,7 @@ type ClusterServiceServer interface {
 	CreateCollection(context.Context, *CreateCollectionRequest) (*CreateCollectionResponse, error)
 	Insert(context.Context, *InsertRequest) (*InsertResponse, error)
 	Delete(context.Context, *DeleteRequest) (*DeleteResponse, error)
+	DeleteCollection(context.Context, *DeleteCollectionRequest) (*DeleteCollectionResponse, error)
 	// Read operations (local or leader)
 	Search(context.Context, *SearchRequest) (*SearchResponse, error)
 	CollectionExists(context.Context, *CollectionExistsRequest) (*CollectionExistsResponse, error)
@@ -169,6 +182,9 @@ func (UnimplementedClusterServiceServer) Insert(context.Context, *InsertRequest)
 }
 func (UnimplementedClusterServiceServer) Delete(context.Context, *DeleteRequest) (*DeleteResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Delete not implemented")
+}
+func (UnimplementedClusterServiceServer) DeleteCollection(context.Context, *DeleteCollectionRequest) (*DeleteCollectionResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteCollection not implemented")
 }
 func (UnimplementedClusterServiceServer) Search(context.Context, *SearchRequest) (*SearchResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Search not implemented")
@@ -256,6 +272,24 @@ func _ClusterService_Delete_Handler(srv interface{}, ctx context.Context, dec fu
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(ClusterServiceServer).Delete(ctx, req.(*DeleteRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ClusterService_DeleteCollection_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteCollectionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ClusterServiceServer).DeleteCollection(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ClusterService_DeleteCollection_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ClusterServiceServer).DeleteCollection(ctx, req.(*DeleteCollectionRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -368,6 +402,10 @@ var ClusterService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Delete",
 			Handler:    _ClusterService_Delete_Handler,
+		},
+		{
+			MethodName: "DeleteCollection",
+			Handler:    _ClusterService_DeleteCollection_Handler,
 		},
 		{
 			MethodName: "Search",

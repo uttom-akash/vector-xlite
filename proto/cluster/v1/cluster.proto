@@ -8,6 +8,7 @@ service ClusterService {
     rpc CreateCollection(CreateCollectionRequest) returns (CreateCollectionResponse);
     rpc Insert(InsertRequest) returns (InsertResponse);
     rpc Delete(DeleteRequest) returns (DeleteResponse);
+    rpc DeleteCollection(DeleteCollectionRequest) returns (DeleteCollectionResponse);
 
     // Read operations (local or leader)
     rpc Search(SearchRequest) returns (SearchResponse);
@@ -97,6 +98,16 @@ message DeleteResponse {
     bool success = 1;
     string message = 2;
 }
+
+message DeleteCollectionRequest {
+    string collection_name = 1;
+}
+
+message DeleteCollectionResponse {
+    bool success = 1;
+    string message = 2;
+}
+
 
 // ============================================================================
 // Read Operation Messages

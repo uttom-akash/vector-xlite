@@ -755,6 +755,102 @@ func (x *DeleteResponse) GetMessage() string {
 	return ""
 }
 
+type DeleteCollectionRequest struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	CollectionName string                 `protobuf:"bytes,1,opt,name=collection_name,json=collectionName,proto3" json:"collection_name,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *DeleteCollectionRequest) Reset() {
+	*x = DeleteCollectionRequest{}
+	mi := &file_cluster_v1_cluster_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteCollectionRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteCollectionRequest) ProtoMessage() {}
+
+func (x *DeleteCollectionRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_cluster_v1_cluster_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteCollectionRequest.ProtoReflect.Descriptor instead.
+func (*DeleteCollectionRequest) Descriptor() ([]byte, []int) {
+	return file_cluster_v1_cluster_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *DeleteCollectionRequest) GetCollectionName() string {
+	if x != nil {
+		return x.CollectionName
+	}
+	return ""
+}
+
+type DeleteCollectionResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	Message       string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteCollectionResponse) Reset() {
+	*x = DeleteCollectionResponse{}
+	mi := &file_cluster_v1_cluster_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteCollectionResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteCollectionResponse) ProtoMessage() {}
+
+func (x *DeleteCollectionResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_cluster_v1_cluster_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteCollectionResponse.ProtoReflect.Descriptor instead.
+func (*DeleteCollectionResponse) Descriptor() ([]byte, []int) {
+	return file_cluster_v1_cluster_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *DeleteCollectionResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+func (x *DeleteCollectionResponse) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
 type SearchRequest struct {
 	state              protoimpl.MessageState `protogen:"open.v1"`
 	CollectionName     string                 `protobuf:"bytes,1,opt,name=collection_name,json=collectionName,proto3" json:"collection_name,omitempty"`
@@ -767,7 +863,7 @@ type SearchRequest struct {
 
 func (x *SearchRequest) Reset() {
 	*x = SearchRequest{}
-	mi := &file_cluster_v1_cluster_proto_msgTypes[13]
+	mi := &file_cluster_v1_cluster_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -779,7 +875,7 @@ func (x *SearchRequest) String() string {
 func (*SearchRequest) ProtoMessage() {}
 
 func (x *SearchRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_cluster_v1_cluster_proto_msgTypes[13]
+	mi := &file_cluster_v1_cluster_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -792,7 +888,7 @@ func (x *SearchRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SearchRequest.ProtoReflect.Descriptor instead.
 func (*SearchRequest) Descriptor() ([]byte, []int) {
-	return file_cluster_v1_cluster_proto_rawDescGZIP(), []int{13}
+	return file_cluster_v1_cluster_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *SearchRequest) GetCollectionName() string {
@@ -833,7 +929,7 @@ type KeyValue struct {
 
 func (x *KeyValue) Reset() {
 	*x = KeyValue{}
-	mi := &file_cluster_v1_cluster_proto_msgTypes[14]
+	mi := &file_cluster_v1_cluster_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -845,7 +941,7 @@ func (x *KeyValue) String() string {
 func (*KeyValue) ProtoMessage() {}
 
 func (x *KeyValue) ProtoReflect() protoreflect.Message {
-	mi := &file_cluster_v1_cluster_proto_msgTypes[14]
+	mi := &file_cluster_v1_cluster_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -858,7 +954,7 @@ func (x *KeyValue) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use KeyValue.ProtoReflect.Descriptor instead.
 func (*KeyValue) Descriptor() ([]byte, []int) {
-	return file_cluster_v1_cluster_proto_rawDescGZIP(), []int{14}
+	return file_cluster_v1_cluster_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *KeyValue) GetKey() string {
@@ -886,7 +982,7 @@ type SearchResultItem struct {
 
 func (x *SearchResultItem) Reset() {
 	*x = SearchResultItem{}
-	mi := &file_cluster_v1_cluster_proto_msgTypes[15]
+	mi := &file_cluster_v1_cluster_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -898,7 +994,7 @@ func (x *SearchResultItem) String() string {
 func (*SearchResultItem) ProtoMessage() {}
 
 func (x *SearchResultItem) ProtoReflect() protoreflect.Message {
-	mi := &file_cluster_v1_cluster_proto_msgTypes[15]
+	mi := &file_cluster_v1_cluster_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -911,7 +1007,7 @@ func (x *SearchResultItem) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SearchResultItem.ProtoReflect.Descriptor instead.
 func (*SearchResultItem) Descriptor() ([]byte, []int) {
-	return file_cluster_v1_cluster_proto_rawDescGZIP(), []int{15}
+	return file_cluster_v1_cluster_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *SearchResultItem) GetRowid() int64 {
@@ -944,7 +1040,7 @@ type SearchResponse struct {
 
 func (x *SearchResponse) Reset() {
 	*x = SearchResponse{}
-	mi := &file_cluster_v1_cluster_proto_msgTypes[16]
+	mi := &file_cluster_v1_cluster_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -956,7 +1052,7 @@ func (x *SearchResponse) String() string {
 func (*SearchResponse) ProtoMessage() {}
 
 func (x *SearchResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_cluster_v1_cluster_proto_msgTypes[16]
+	mi := &file_cluster_v1_cluster_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -969,7 +1065,7 @@ func (x *SearchResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SearchResponse.ProtoReflect.Descriptor instead.
 func (*SearchResponse) Descriptor() ([]byte, []int) {
-	return file_cluster_v1_cluster_proto_rawDescGZIP(), []int{16}
+	return file_cluster_v1_cluster_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *SearchResponse) GetResults() []*SearchResultItem {
@@ -988,7 +1084,7 @@ type CollectionExistsRequest struct {
 
 func (x *CollectionExistsRequest) Reset() {
 	*x = CollectionExistsRequest{}
-	mi := &file_cluster_v1_cluster_proto_msgTypes[17]
+	mi := &file_cluster_v1_cluster_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1000,7 +1096,7 @@ func (x *CollectionExistsRequest) String() string {
 func (*CollectionExistsRequest) ProtoMessage() {}
 
 func (x *CollectionExistsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_cluster_v1_cluster_proto_msgTypes[17]
+	mi := &file_cluster_v1_cluster_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1013,7 +1109,7 @@ func (x *CollectionExistsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CollectionExistsRequest.ProtoReflect.Descriptor instead.
 func (*CollectionExistsRequest) Descriptor() ([]byte, []int) {
-	return file_cluster_v1_cluster_proto_rawDescGZIP(), []int{17}
+	return file_cluster_v1_cluster_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *CollectionExistsRequest) GetCollectionName() string {
@@ -1032,7 +1128,7 @@ type CollectionExistsResponse struct {
 
 func (x *CollectionExistsResponse) Reset() {
 	*x = CollectionExistsResponse{}
-	mi := &file_cluster_v1_cluster_proto_msgTypes[18]
+	mi := &file_cluster_v1_cluster_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1044,7 +1140,7 @@ func (x *CollectionExistsResponse) String() string {
 func (*CollectionExistsResponse) ProtoMessage() {}
 
 func (x *CollectionExistsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_cluster_v1_cluster_proto_msgTypes[18]
+	mi := &file_cluster_v1_cluster_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1057,7 +1153,7 @@ func (x *CollectionExistsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CollectionExistsResponse.ProtoReflect.Descriptor instead.
 func (*CollectionExistsResponse) Descriptor() ([]byte, []int) {
-	return file_cluster_v1_cluster_proto_rawDescGZIP(), []int{18}
+	return file_cluster_v1_cluster_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *CollectionExistsResponse) GetExists() bool {
@@ -1118,6 +1214,11 @@ const file_cluster_v1_cluster_proto_rawDesc = "" +
 	"\x02id\x18\x02 \x01(\x03R\x02id\"D\n" +
 	"\x0eDeleteResponse\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x18\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage\"B\n" +
+	"\x17DeleteCollectionRequest\x12'\n" +
+	"\x0fcollection_name\x18\x01 \x01(\tR\x0ecollectionName\"N\n" +
+	"\x18DeleteCollectionResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x18\n" +
 	"\amessage\x18\x02 \x01(\tR\amessage\"\x97\x01\n" +
 	"\rSearchRequest\x12'\n" +
 	"\x0fcollection_name\x18\x01 \x01(\tR\x0ecollectionName\x12\x16\n" +
@@ -1136,11 +1237,12 @@ const file_cluster_v1_cluster_proto_rawDesc = "" +
 	"\x17CollectionExistsRequest\x12'\n" +
 	"\x0fcollection_name\x18\x01 \x01(\tR\x0ecollectionName\"2\n" +
 	"\x18CollectionExistsResponse\x12\x16\n" +
-	"\x06exists\x18\x01 \x01(\bR\x06exists2\x9a\x06\n" +
+	"\x06exists\x18\x01 \x01(\bR\x06exists2\x8b\a\n" +
 	"\x0eClusterService\x12o\n" +
 	"\x10CreateCollection\x12,.vectorxlite.cluster.CreateCollectionRequest\x1a-.vectorxlite.cluster.CreateCollectionResponse\x12Q\n" +
 	"\x06Insert\x12\".vectorxlite.cluster.InsertRequest\x1a#.vectorxlite.cluster.InsertResponse\x12Q\n" +
-	"\x06Delete\x12\".vectorxlite.cluster.DeleteRequest\x1a#.vectorxlite.cluster.DeleteResponse\x12Q\n" +
+	"\x06Delete\x12\".vectorxlite.cluster.DeleteRequest\x1a#.vectorxlite.cluster.DeleteResponse\x12o\n" +
+	"\x10DeleteCollection\x12,.vectorxlite.cluster.DeleteCollectionRequest\x1a-.vectorxlite.cluster.DeleteCollectionResponse\x12Q\n" +
 	"\x06Search\x12\".vectorxlite.cluster.SearchRequest\x1a#.vectorxlite.cluster.SearchResponse\x12o\n" +
 	"\x10CollectionExists\x12,.vectorxlite.cluster.CollectionExistsRequest\x1a-.vectorxlite.cluster.CollectionExistsResponse\x12f\n" +
 	"\x0eGetClusterInfo\x12*.vectorxlite.cluster.GetClusterInfoRequest\x1a(.vectorxlite.cluster.ClusterInfoResponse\x12`\n" +
@@ -1159,7 +1261,7 @@ func file_cluster_v1_cluster_proto_rawDescGZIP() []byte {
 	return file_cluster_v1_cluster_proto_rawDescData
 }
 
-var file_cluster_v1_cluster_proto_msgTypes = make([]protoimpl.MessageInfo, 19)
+var file_cluster_v1_cluster_proto_msgTypes = make([]protoimpl.MessageInfo, 21)
 var file_cluster_v1_cluster_proto_goTypes = []any{
 	(*GetClusterInfoRequest)(nil),    // 0: vectorxlite.cluster.GetClusterInfoRequest
 	(*ClusterInfoResponse)(nil),      // 1: vectorxlite.cluster.ClusterInfoResponse
@@ -1174,35 +1276,39 @@ var file_cluster_v1_cluster_proto_goTypes = []any{
 	(*InsertResponse)(nil),           // 10: vectorxlite.cluster.InsertResponse
 	(*DeleteRequest)(nil),            // 11: vectorxlite.cluster.DeleteRequest
 	(*DeleteResponse)(nil),           // 12: vectorxlite.cluster.DeleteResponse
-	(*SearchRequest)(nil),            // 13: vectorxlite.cluster.SearchRequest
-	(*KeyValue)(nil),                 // 14: vectorxlite.cluster.KeyValue
-	(*SearchResultItem)(nil),         // 15: vectorxlite.cluster.SearchResultItem
-	(*SearchResponse)(nil),           // 16: vectorxlite.cluster.SearchResponse
-	(*CollectionExistsRequest)(nil),  // 17: vectorxlite.cluster.CollectionExistsRequest
-	(*CollectionExistsResponse)(nil), // 18: vectorxlite.cluster.CollectionExistsResponse
+	(*DeleteCollectionRequest)(nil),  // 13: vectorxlite.cluster.DeleteCollectionRequest
+	(*DeleteCollectionResponse)(nil), // 14: vectorxlite.cluster.DeleteCollectionResponse
+	(*SearchRequest)(nil),            // 15: vectorxlite.cluster.SearchRequest
+	(*KeyValue)(nil),                 // 16: vectorxlite.cluster.KeyValue
+	(*SearchResultItem)(nil),         // 17: vectorxlite.cluster.SearchResultItem
+	(*SearchResponse)(nil),           // 18: vectorxlite.cluster.SearchResponse
+	(*CollectionExistsRequest)(nil),  // 19: vectorxlite.cluster.CollectionExistsRequest
+	(*CollectionExistsResponse)(nil), // 20: vectorxlite.cluster.CollectionExistsResponse
 }
 var file_cluster_v1_cluster_proto_depIdxs = []int32{
 	2,  // 0: vectorxlite.cluster.ClusterInfoResponse.nodes:type_name -> vectorxlite.cluster.NodeInfo
-	14, // 1: vectorxlite.cluster.SearchResultItem.payload:type_name -> vectorxlite.cluster.KeyValue
-	15, // 2: vectorxlite.cluster.SearchResponse.results:type_name -> vectorxlite.cluster.SearchResultItem
+	16, // 1: vectorxlite.cluster.SearchResultItem.payload:type_name -> vectorxlite.cluster.KeyValue
+	17, // 2: vectorxlite.cluster.SearchResponse.results:type_name -> vectorxlite.cluster.SearchResultItem
 	7,  // 3: vectorxlite.cluster.ClusterService.CreateCollection:input_type -> vectorxlite.cluster.CreateCollectionRequest
 	9,  // 4: vectorxlite.cluster.ClusterService.Insert:input_type -> vectorxlite.cluster.InsertRequest
 	11, // 5: vectorxlite.cluster.ClusterService.Delete:input_type -> vectorxlite.cluster.DeleteRequest
-	13, // 6: vectorxlite.cluster.ClusterService.Search:input_type -> vectorxlite.cluster.SearchRequest
-	17, // 7: vectorxlite.cluster.ClusterService.CollectionExists:input_type -> vectorxlite.cluster.CollectionExistsRequest
-	0,  // 8: vectorxlite.cluster.ClusterService.GetClusterInfo:input_type -> vectorxlite.cluster.GetClusterInfoRequest
-	3,  // 9: vectorxlite.cluster.ClusterService.JoinCluster:input_type -> vectorxlite.cluster.JoinClusterRequest
-	5,  // 10: vectorxlite.cluster.ClusterService.LeaveCluster:input_type -> vectorxlite.cluster.LeaveClusterRequest
-	8,  // 11: vectorxlite.cluster.ClusterService.CreateCollection:output_type -> vectorxlite.cluster.CreateCollectionResponse
-	10, // 12: vectorxlite.cluster.ClusterService.Insert:output_type -> vectorxlite.cluster.InsertResponse
-	12, // 13: vectorxlite.cluster.ClusterService.Delete:output_type -> vectorxlite.cluster.DeleteResponse
-	16, // 14: vectorxlite.cluster.ClusterService.Search:output_type -> vectorxlite.cluster.SearchResponse
-	18, // 15: vectorxlite.cluster.ClusterService.CollectionExists:output_type -> vectorxlite.cluster.CollectionExistsResponse
-	1,  // 16: vectorxlite.cluster.ClusterService.GetClusterInfo:output_type -> vectorxlite.cluster.ClusterInfoResponse
-	4,  // 17: vectorxlite.cluster.ClusterService.JoinCluster:output_type -> vectorxlite.cluster.JoinClusterResponse
-	6,  // 18: vectorxlite.cluster.ClusterService.LeaveCluster:output_type -> vectorxlite.cluster.LeaveClusterResponse
-	11, // [11:19] is the sub-list for method output_type
-	3,  // [3:11] is the sub-list for method input_type
+	13, // 6: vectorxlite.cluster.ClusterService.DeleteCollection:input_type -> vectorxlite.cluster.DeleteCollectionRequest
+	15, // 7: vectorxlite.cluster.ClusterService.Search:input_type -> vectorxlite.cluster.SearchRequest
+	19, // 8: vectorxlite.cluster.ClusterService.CollectionExists:input_type -> vectorxlite.cluster.CollectionExistsRequest
+	0,  // 9: vectorxlite.cluster.ClusterService.GetClusterInfo:input_type -> vectorxlite.cluster.GetClusterInfoRequest
+	3,  // 10: vectorxlite.cluster.ClusterService.JoinCluster:input_type -> vectorxlite.cluster.JoinClusterRequest
+	5,  // 11: vectorxlite.cluster.ClusterService.LeaveCluster:input_type -> vectorxlite.cluster.LeaveClusterRequest
+	8,  // 12: vectorxlite.cluster.ClusterService.CreateCollection:output_type -> vectorxlite.cluster.CreateCollectionResponse
+	10, // 13: vectorxlite.cluster.ClusterService.Insert:output_type -> vectorxlite.cluster.InsertResponse
+	12, // 14: vectorxlite.cluster.ClusterService.Delete:output_type -> vectorxlite.cluster.DeleteResponse
+	14, // 15: vectorxlite.cluster.ClusterService.DeleteCollection:output_type -> vectorxlite.cluster.DeleteCollectionResponse
+	18, // 16: vectorxlite.cluster.ClusterService.Search:output_type -> vectorxlite.cluster.SearchResponse
+	20, // 17: vectorxlite.cluster.ClusterService.CollectionExists:output_type -> vectorxlite.cluster.CollectionExistsResponse
+	1,  // 18: vectorxlite.cluster.ClusterService.GetClusterInfo:output_type -> vectorxlite.cluster.ClusterInfoResponse
+	4,  // 19: vectorxlite.cluster.ClusterService.JoinCluster:output_type -> vectorxlite.cluster.JoinClusterResponse
+	6,  // 20: vectorxlite.cluster.ClusterService.LeaveCluster:output_type -> vectorxlite.cluster.LeaveClusterResponse
+	12, // [12:21] is the sub-list for method output_type
+	3,  // [3:12] is the sub-list for method input_type
 	3,  // [3:3] is the sub-list for extension type_name
 	3,  // [3:3] is the sub-list for extension extendee
 	0,  // [0:3] is the sub-list for field type_name
@@ -1219,7 +1325,7 @@ func file_cluster_v1_cluster_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_cluster_v1_cluster_proto_rawDesc), len(file_cluster_v1_cluster_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   19,
+			NumMessages:   21,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

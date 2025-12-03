@@ -42,7 +42,9 @@ def test_cluster_info(cluster_dir: Path) -> bool:
 
     exit_code, stdout, stderr = run_client_command(
         cluster_dir,
-        ["info", "-addr", ":5002"]
+        [
+            "info", "-addr", ":5002"
+        ]
     )
 
     if exit_code == 0:
@@ -161,6 +163,49 @@ def test_write_redirect(cluster_dir: Path) -> bool:
         return True  # Not a failure if redirect works
 
 
+def test_delete_vector(cluster_dir: Path) -> bool:
+    """Test 7: Delete vector"""
+    console.print("\n[yellow]Test 7: Deleting vector[/yellow]")
+
+    exit_code, stdout, stderr = run_client_command(
+        cluster_dir,
+        [
+            "delete",
+            "-addr", ":5002",
+            "-name", "users",
+            "-id", "1"
+        ]
+    )
+
+    if exit_code == 0:
+        console.print(stdout)
+        return True
+    else:
+        console.print(f"[red]Failed: {stderr}[/red]")
+        return False
+
+
+def test_delete_collection(cluster_dir: Path) -> bool:
+    """Test 8: Delete collection"""
+    console.print("\n[yellow]Test 8: Deleting 'users' collection[/yellow]")
+
+    exit_code, stdout, stderr = run_client_command(
+        cluster_dir,
+        [
+            "delete-collection",
+            "-addr", ":5002",
+            "-name", "users"
+        ]
+    )
+
+    if exit_code == 0:
+        console.print(stdout)
+        return True
+    else:
+        console.print(f"[red]Failed: {stderr}[/red]")
+        return False
+
+
 def main():
     root_dir = Path(__file__).parent.parent.parent.resolve()
     cluster_dir = root_dir / "distributed" / "cluster"
@@ -208,6 +253,14 @@ def main():
 
     # Test 6: Write redirect
     if not test_write_redirect(cluster_dir):
+        all_passed = False
+
+    # Test 7: Delete vector
+    if not test_delete_vector(cluster_dir):
+        all_passed = False
+
+    # Test 8: Delete collection
+    if not test_delete_collection(cluster_dir):
         all_passed = False
 
     # Summary

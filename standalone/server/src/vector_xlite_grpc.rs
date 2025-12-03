@@ -6,7 +6,7 @@ use tonic::{Request, Response, Status};
 use tokio_stream::wrappers::ReceiverStream;
 use vector_xlite::VectorXLite;
 use vector_xlite::snapshot::{SnapshotChunk, SnapshotConfig, SnapshotExporter, SnapshotImporter};
-use vector_xlite::types::{CollectionConfig, InsertPoint, SearchPoint};
+use vector_xlite::types::{CollectionConfig, DeleteCollection, DeletePoint, InsertPoint, SearchPoint};
 
 pub struct VectorXLiteGrpc {
     vxlite: VectorXLite,
@@ -63,6 +63,41 @@ impl VectorXLitePb for VectorXLiteGrpc {
             .insert(point)
             .map_err(|e| Status::internal(e.to_string()))?;
         Ok(Response::new(pb::EmptyPb {}))
+    }
+
+    async fn delete(
+        &self,
+        req: Request<pb::DeleteRequestPb>,
+    ) -> Result<Response<pb::DeleteResponsePb>, Status> {
+        let dr = req.into_inner();
+        let delete_point = DeletePoint::try_from(dr).map_err(|e| Status::invalid_argument(e))?;
+
+        self.vxlite
+            .delete(delete_point)
+            .map_err(|e| Status::internal(e.to_string()))?;
+
+        Ok(Response::new(pb::DeleteResponsePb {
+            success: true,
+            message: "Delete operation successful".to_string(),
+        }))
+    }
+
+    async fn delete_collection(
+        &self,
+        req: Request<pb::DeleteCollectionRequestPb>,
+    ) -> Result<Response<pb::DeleteResponsePb>, Status> {
+        let dcr = req.into_inner();
+        let delete_collection =
+            DeleteCollection::try_from(dcr).map_err(|e| Status::invalid_argument(e))?;
+
+        self.vxlite
+            .delete_collection(delete_collection)
+            .map_err(|e| Status::internal(e.to_string()))?;
+
+        Ok(Response::new(pb::DeleteResponsePb {
+            success: true,
+            message: "Delete collection operation successful".to_string(),
+        }))
     }
 
     async fn search(

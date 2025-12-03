@@ -1,7 +1,10 @@
-use crate::proto::{CollectionConfigPb, InsertPointPb, SearchPointPb};
+use crate::proto::{
+    CollectionConfigPb, DeleteCollectionRequestPb, DeleteRequestPb, InsertPointPb, SearchPointPb,
+};
 use std::convert::TryFrom;
 use vector_xlite::types::{
-    CollectionConfig, CollectionConfigBuilder, DistanceFunction, InsertPoint, SearchPoint,
+    CollectionConfig, CollectionConfigBuilder, DeleteCollection, DeletePoint, DistanceFunction,
+    InsertPoint, SearchPoint,
 };
 
 impl TryFrom<CollectionConfigPb> for CollectionConfig {
@@ -51,6 +54,27 @@ impl TryFrom<SearchPointPb> for SearchPoint {
             b = b.payload_search_query(&pb.payload_search_query);
         }
         b.build().map_err(|e| e.to_string())
+    }
+}
+
+impl TryFrom<DeleteRequestPb> for DeletePoint {
+    type Error = String;
+    fn try_from(pb: DeleteRequestPb) -> Result<Self, Self::Error> {
+        DeletePoint::builder()
+            .collection_name(&pb.collection_name)
+            .id(pb.id as u64)
+            .build()
+            .map_err(|e| e.to_string())
+    }
+}
+
+impl TryFrom<DeleteCollectionRequestPb> for DeleteCollection {
+    type Error = String;
+    fn try_from(pb: DeleteCollectionRequestPb) -> Result<Self, Self::Error> {
+        DeleteCollection::builder()
+            .collection_name(&pb.collection_name)
+            .build()
+            .map_err(|e| e.to_string())
     }
 }
 
