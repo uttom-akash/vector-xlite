@@ -1,7 +1,9 @@
 use crate::error::VecXError;
 use crate::helper::*;
 use crate::planner::query_planner::QueryPlanner;
-use crate::types::{CollectionConfig, DeletePoint, InsertPoint, QueryPlan, SearchPoint};
+use crate::types::{
+    CollectionConfig, DeleteCollection, DeletePoint, InsertPoint, QueryPlan, SearchPoint,
+};
 use r2d2::Pool;
 use r2d2_sqlite::SqliteConnectionManager;
 
@@ -136,6 +138,35 @@ impl QueryPlanner for SqliteQueryPlanner {
         Ok(query_plans)
     }
 
+    fn plan_delete_collection_query(
+        &self,
+        delete_collection: DeleteCollection,
+    ) -> Result<Vec<QueryPlan>, VecXError> {
+        let mut query_plans: Vec<QueryPlan> = Vec::new();
+
+        // Drop payload table
+        let payload_drop_sql = format!("DROP TABLE {}", delete_collection.collection_name);
+
+        query_plans.push(QueryPlan {
+            sql: payload_drop_sql,
+            params: vec![],
+            post_process: None,
+        });
+
+        // Drop vector table (HNSW index)
+        let virtual_table_name =
+            get_vector_table_name(delete_collection.collection_name.as_str());
+        let vector_drop_sql = format!("DROP TABLE {}", virtual_table_name);
+
+        query_plans.push(QueryPlan {
+            sql: vector_drop_sql,
+            params: vec![],
+            post_process: None,
+        });
+
+        Ok(query_plans)
+    }
+
     fn plan_search_query(&self, search_point: SearchPoint) -> Result<QueryPlan, VecXError> {
         let vector_json = format!("{:?}", search_point.vector);
         let virtual_table_name = get_vector_table_name(search_point.collection_name.as_str());
@@ -143,9 +174,9 @@ impl QueryPlanner for SqliteQueryPlanner {
         // --- Case 1: No payload filter ---
         if search_point.payload_search_query.is_none() {
             let sql = format!(
-                "SELECT rowid, distance 
-             FROM {} 
-             WHERE knn_search(vector_embedding, knn_param(vector_from_json(?1), ?2)) 
+                "SELECT rowid, distance
+             FROM {}
+             WHERE knn_search(vector_embedding, knn_param(vector_from_json(?1), ?2))
              ORDER BY distance",
                 virtual_table_name
             );
@@ -184,7 +215,7 @@ impl QueryPlanner for SqliteQueryPlanner {
                  AND vt_inner.rowid in ({payload_query_ids})
              ) AS vt
              INNER JOIN ({payload_query}) AS pt
-                 ON vt.rowid = pt.rowid 
+                 ON vt.rowid = pt.rowid
              ORDER BY vt.distance LIMIT ?2",
                 payload_query_ids = payload_query_ids,
                 vt_table_name = virtual_table_name,
@@ -207,7 +238,7 @@ impl QueryPlanner for SqliteQueryPlanner {
              WHERE knn_search(vt_inner.vector_embedding, knn_param(vector_from_json(?1), ?2))
          ) AS vt
          INNER JOIN ({payload_query}) AS pt
-             ON vt.rowid = pt.rowid 
+             ON vt.rowid = pt.rowid
          ORDER BY vt.distance LIMIT ?3",
             vt_table_name = virtual_table_name,
             payload_query = payload_query,
@@ -243,3 +274,4 @@ impl QueryPlanner for SqliteQueryPlanner {
         })
     }
 }
+

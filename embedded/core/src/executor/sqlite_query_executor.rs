@@ -58,6 +58,21 @@ impl QueryExecutor for SqliteQueryExecutor {
         Ok(())
     }
 
+    fn execute_delete_collection_query(
+        &self,
+        query_plans: Vec<QueryPlan>,
+    ) -> rusqlite::Result<(), VecXError> {
+        let mut conn = self.conn_pool.get()?;
+        let trx = conn.transaction()?;
+
+        for plan in &query_plans {
+            trx.execute(&plan.sql, rusqlite::params_from_iter(&plan.params))?;
+        }
+
+        trx.commit()?;
+        Ok(())
+    }
+
     fn execute_search_query(
         &self,
         query_plan: QueryPlan,

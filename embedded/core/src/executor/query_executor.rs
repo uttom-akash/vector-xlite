@@ -5,6 +5,7 @@ pub(crate) trait QueryExecutor: Send + Sync {
     -> Result<(), VecXError>;
     fn execute_insert_query(&self, query_plans: Vec<QueryPlan>) -> Result<(), VecXError>;
     fn execute_delete_query(&self, query_plans: Vec<QueryPlan>) -> Result<(), VecXError>;
+    fn execute_delete_collection_query(&self, query_plans: Vec<QueryPlan>) -> Result<(), VecXError>;
     fn execute_search_query(
         &self,
         query_plan: QueryPlan,
