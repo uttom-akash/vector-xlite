@@ -1,15 +1,5 @@
 #!/usr/bin/env python3
-"""
-Setup script for VectorXLite tools
-
-This script:
-1. Creates a virtual environment
-2. Installs dependencies
-3. Verifies the installation
-
-Usage:
-    python tools/setup.py
-"""
+"""Setup script for VectorXLite tools."""
 
 import subprocess
 import sys
@@ -20,7 +10,6 @@ console = Console()
 
 
 def run_command(cmd: list[str], cwd: Path = None) -> tuple[int, str, str]:
-    """Run a command and return exit code, stdout, stderr"""
     result = subprocess.run(
         cmd,
         cwd=cwd,
@@ -53,7 +42,7 @@ def main():
         console.print(f"[red]Error creating venv: {stderr}[/red]")
         sys.exit(1)
 
-    console.print("[green]✓ Virtual environment created[/green]")
+    console.print("[green]Virtual environment created[/green]")
 
     # Determine pip path
     if sys.platform == "win32":
@@ -82,7 +71,7 @@ def main():
         console.print(f"[red]Error installing dependencies: {stderr}[/red]")
         sys.exit(1)
 
-    console.print("[green]✓ Dependencies installed[/green]")
+    console.print("[green]Dependencies installed[/green]")
 
     # Show installed packages
     console.print("\n[yellow]Installed packages:[/yellow]")
@@ -93,7 +82,7 @@ def main():
     console.print(stdout)
 
     # Instructions
-    console.print("\n[bold green]✓ Setup complete![/bold green]\n")
+    console.print("\n[bold green]Setup complete![/bold green]\n")
     console.print("To use the tools, activate the virtual environment:")
 
     if sys.platform == "win32":

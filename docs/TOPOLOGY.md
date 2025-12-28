@@ -194,15 +194,15 @@ Layer 2: Raft Protocol (Consensus)
 ```
     Node 5 (New)
        │
-       │  Try Seed 1 (node1) ──► ✗ Connection Failed
+       │  Try Seed 1 (node1) ──► [FAIL] Connection Failed
        │
-       │  Try Seed 2 (node2) ──► ✓ Success
+       │  Try Seed 2 (node2) ──► [OK] Success
        │                            │
        │                            └─► Returns leader info
        │
        └─► Joins successfully
 
-    Result: ✓ Cluster accessible (redundant seeds)
+    Result: [OK] Cluster accessible (redundant seeds)
 ```
 
 ### Scenario B: All Seeds Down (But Cluster Alive)
@@ -210,10 +210,10 @@ Layer 2: Raft Protocol (Consensus)
 ```
     Node 5 (New)
        │
-       │  Try Seed 1 (node1) ──► ✗ Down
-       │  Try Seed 2 (node2) ──► ✗ Down
+       │  Try Seed 1 (node1) ──► [FAIL] Down
+       │  Try Seed 2 (node2) ──► [FAIL] Down
        │
-       └─► ✗ Cannot join (no discovery)
+       └─► [FAIL] Cannot join (no discovery)
 
     Cluster: [node3 (LEADER), node4 (Follower)]
 
@@ -232,10 +232,10 @@ Layer 2: Raft Protocol (Consensus)
        │  "leader: node2"      │                      │
        ◄────────────────────────┤                      │
        │                        │                      │
-       │  POST /api/join       │                      ✗ CRASH
+       │  POST /api/join       │                      [CRASH]
        ├──────────────────────────────────────────────►
        │                        │
-       │  ✗ Connection timeout │
+       │  [FAIL] Connection timeout │
        │                        │
        │  GET /api/leader ──────►  (New election happened)
        │                        │
@@ -244,10 +244,10 @@ Layer 2: Raft Protocol (Consensus)
        │                        │
        │  POST /api/join ───────────────────────────► Node 3 (New Leader)
        │                                                     │
-       │  ✓ Joined successfully                             │
+       │  [OK] Joined successfully                          │
        ◄──────────────────────────────────────────────────────┤
 
-    Result: ✓ Retry with new leader
+    Result: [OK] Retry with new leader
 ```
 
 ---

@@ -1,15 +1,5 @@
 #!/usr/bin/env python3
-"""
-Start a 3-node VectorXLite distributed cluster with Raft consensus
-
-Port convention:
-  Node 1: raft=5001, cluster=5002, vector=5003
-  Node 2: raft=5011, cluster=5012, vector=5013
-  Node 3: raft=5021, cluster=5022, vector=5023
-
-Usage:
-    python tools/start_cluster.py
-"""
+"""Start a 3-node VectorXLite distributed cluster with Raft consensus."""
 
 import subprocess
 import sys
@@ -23,7 +13,6 @@ console = Console()
 
 
 def check_port(port: int, timeout: int = 30) -> bool:
-    """Check if a port is available"""
     for _ in range(timeout):
         try:
             with socket.create_connection(("localhost", port), timeout=1):
@@ -34,7 +23,6 @@ def check_port(port: int, timeout: int = 30) -> bool:
 
 
 def is_port_in_use(port: int) -> bool:
-    """Check if a port is already in use"""
     try:
         with socket.create_connection(("localhost", port), timeout=1):
             return True
@@ -43,7 +31,6 @@ def is_port_in_use(port: int) -> bool:
 
 
 def run_cargo_build(cwd: Path, args: list[str]) -> subprocess.Popen:
-    """Run cargo command in background"""
     cmd = ["cargo", "run", "--release"] + args
     log_file = cwd / "logs" / f"{args[-1].split(':')[-1]}.log"
     log_file.parent.mkdir(parents=True, exist_ok=True)
@@ -60,7 +47,6 @@ def run_cargo_build(cwd: Path, args: list[str]) -> subprocess.Popen:
 
 
 def run_go_build(cwd: Path, binary: str, args: list[str]) -> subprocess.Popen:
-    """Run Go binary in background"""
     cmd = [binary] + args
     log_file = cwd / "logs" / f"{args[1]}.log"  # args[1] is node ID
     log_file.parent.mkdir(parents=True, exist_ok=True)
@@ -77,7 +63,6 @@ def run_go_build(cwd: Path, binary: str, args: list[str]) -> subprocess.Popen:
 
 
 def start_vector_servers(root_dir: Path, cluster_dir: Path) -> list[int]:
-    """Start 3 VectorXLite servers"""
     console.print("[yellow]Starting VectorXLite servers...[/yellow]")
 
     server_dir = root_dir / "standalone" / "server"
@@ -115,10 +100,10 @@ def start_vector_servers(root_dir: Path, cluster_dir: Path) -> list[int]:
         for port in [5003, 5013, 5023]:
             task = progress.add_task(f"Checking port {port}...", total=None)
             if check_port(port):
-                progress.update(task, description=f"[green]✓ Port {port} ready[/green]")
+                progress.update(task, description=f"[green]Port {port} ready[/green]")
                 progress.stop_task(task)
             else:
-                progress.update(task, description=f"[red]✗ Port {port} failed[/red]")
+                progress.update(task, description=f"[red]Port {port} failed[/red]")
                 progress.stop_task(task)
                 console.print(f"[red]Error: VectorXLite server on port {port} failed to start[/red]")
                 console.print(f"Check {cluster_dir}/logs/vector_xlite_node*.log for details")
@@ -128,7 +113,6 @@ def start_vector_servers(root_dir: Path, cluster_dir: Path) -> list[int]:
 
 
 def build_binaries(cluster_dir: Path):
-    """Build Go binaries"""
     console.print("\n[yellow]Building cluster binaries...[/yellow]")
 
     bin_dir = cluster_dir / "bin"
@@ -158,11 +142,10 @@ def build_binaries(cluster_dir: Path):
         console.print(f"[red]Error building CLI: {result.stderr}[/red]")
         sys.exit(1)
 
-    console.print("  [green]✓ Binaries built successfully[/green]")
+    console.print("  [green]Binaries built successfully[/green]")
 
 
 def start_cluster_nodes(cluster_dir: Path) -> list[int]:
-    """Start 3 cluster nodes"""
     console.print("\n[yellow]Starting cluster nodes...[/yellow]")
 
     pids = []
@@ -195,7 +178,7 @@ def start_cluster_nodes(cluster_dir: Path) -> list[int]:
         for pid in pids:
             f.write(f"{pid}\n")
 
-    console.print("  [green]✓ All nodes started successfully![/green]")
+    console.print("  [green]All nodes started successfully![/green]")
 
     console.print("\n[cyan]Cluster configuration:[/cyan]")
     console.print("  Node1: raft=127.0.0.1:5001, cluster=:5002, vector=:5003")
@@ -206,7 +189,6 @@ def start_cluster_nodes(cluster_dir: Path) -> list[int]:
 
 
 def join_cluster(cluster_dir: Path):
-    """Join nodes to the cluster"""
     console.print("\n[yellow]Forming cluster...[/yellow]")
     console.print("  Waiting for cluster to stabilize (5s)...")
     time.sleep(5)
@@ -237,7 +219,6 @@ def join_cluster(cluster_dir: Path):
 
 
 def show_cluster_info(cluster_dir: Path):
-    """Show cluster information"""
     console.print("\n[green]=== Cluster Info ===[/green]")
     result = subprocess.run(
         ["./bin/client", "info", "-addr", ":5002"],
@@ -278,7 +259,7 @@ def main():
         # Show cluster info
         show_cluster_info(cluster_dir)
 
-        console.print("\n[bold green]✓ Cluster is ready for operations![/bold green]")
+        console.print("\n[bold green]Cluster is ready for operations![/bold green]")
         console.print(f"\nLogs are in {cluster_dir}/logs/ directory")
         console.print("To stop cluster: python tools/stop_cluster.py")
 
