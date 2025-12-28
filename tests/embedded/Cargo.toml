@@ -5,7 +5,7 @@ edition = "2021"
 
 [dependencies]
 vector_xlite = { path = "../../embedded/core" }
-rusqlite = { version = "0.37.0", features = ["load_extension"] }
+rusqlite = { version = "0.37.0", features = ["bundled"] }
 r2d2 = "0.8.10"
 r2d2_sqlite = { version = "0.31.0" }
 

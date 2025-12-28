@@ -7,6 +7,7 @@ mod constant;
 pub mod error;
 pub mod customizer;
 pub mod snapshot;
+pub mod vtab;
 
 pub use vector_xlite::*;
 // pub use customizer::*;

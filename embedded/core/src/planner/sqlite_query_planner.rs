@@ -177,7 +177,8 @@ impl QueryPlanner for SqliteQueryPlanner {
                 "SELECT rowid, distance
              FROM {}
              WHERE knn_search(vector_embedding, knn_param(vector_from_json(?1), ?2))
-             ORDER BY distance",
+             ORDER BY distance
+             LIMIT ?2",
                 virtual_table_name
             );
 
