@@ -89,7 +89,7 @@ pub fn run_complex_example(vlite: &VectorXLite, sqlite_conn_pool: Pool<SqliteCon
                 vlite.insert(point.clone()).unwrap();
             }
 
-            println!("✅ Inserted complex story points into 'story_advanced' collection.");
+            println!("Inserted complex story points into 'story_advanced' collection.");
 
             // Create a complex search point
             let search_point = SearchPoint::builder()
@@ -118,8 +118,8 @@ pub fn run_complex_example(vlite: &VectorXLite, sqlite_conn_pool: Pool<SqliteCon
             // Perform the vector + SQL hybrid search
             let results = vlite.search(search_point).unwrap();
 
-            println!("\n🚀 Advanced Story Search Results:\n{:#?}", results);
+            println!("\nAdvanced Story Search Results:\n{:#?}", results);
         }
-        Err(e) => println!("❌ Error creating advanced story collection: {:?}", e),
+        Err(e) => println!("Error creating advanced story collection: {:?}", e),
     }
 }

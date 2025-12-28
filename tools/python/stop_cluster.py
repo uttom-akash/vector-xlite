@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
-"""
-Stop the VectorXLite distributed cluster
-
-Usage:
-    python tools/stop_cluster.py [--with-vector-server]
-"""
+"""Stop the VectorXLite distributed cluster."""
 
 import argparse
 import sys
@@ -16,7 +11,6 @@ console = Console()
 
 
 def read_pids_from_file(pid_file: Path) -> list[int]:
-    """Read PIDs from a file"""
     if not pid_file.exists():
         return []
 
@@ -30,7 +24,6 @@ def read_pids_from_file(pid_file: Path) -> list[int]:
 
 
 def kill_process(pid: int) -> bool:
-    """Kill a process by PID"""
     try:
         process = psutil.Process(pid)
         if process.is_running():
@@ -54,7 +47,6 @@ def kill_process(pid: int) -> bool:
 
 
 def kill_processes_by_name(name_patterns: list[str]) -> int:
-    """Kill processes matching any of the name patterns"""
     killed = 0
     for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
         try:
@@ -69,7 +61,6 @@ def kill_processes_by_name(name_patterns: list[str]) -> int:
 
 
 def stop_cluster_nodes(cluster_dir: Path) -> bool:
-    """Stop cluster nodes"""
     console.print("[yellow]Stopping VectorXLite Cluster nodes...[/yellow]")
 
     cluster_pid_file = cluster_dir / ".cluster_pids"
@@ -80,7 +71,7 @@ def stop_cluster_nodes(cluster_dir: Path) -> bool:
             for pid in pids:
                 kill_process(pid)
             cluster_pid_file.unlink()
-            console.print("[green]✓ Cluster nodes stopped successfully[/green]")
+            console.print("[green]Cluster nodes stopped successfully[/green]")
             return True
         else:
             console.print("[yellow]No PIDs found in cluster PID file[/yellow]")
@@ -93,7 +84,7 @@ def stop_cluster_nodes(cluster_dir: Path) -> bool:
     killed = kill_processes_by_name(patterns)
 
     if killed > 0:
-        console.print(f"[green]✓ Killed {killed} cluster processes[/green]")
+        console.print(f"[green]Killed {killed} cluster processes[/green]")
         return True
     else:
         console.print("[dim]No cluster processes found[/dim]")
@@ -101,7 +92,6 @@ def stop_cluster_nodes(cluster_dir: Path) -> bool:
 
 
 def stop_vector_servers(cluster_dir: Path) -> bool:
-    """Stop VectorXLite servers"""
     console.print("[yellow]Stopping VectorXLite servers...[/yellow]")
 
     vector_pid_file = cluster_dir / ".vector_xlite_pids"
@@ -112,7 +102,7 @@ def stop_vector_servers(cluster_dir: Path) -> bool:
             for pid in pids:
                 kill_process(pid)
             vector_pid_file.unlink()
-            console.print("[green]✓ VectorXLite servers stopped[/green]")
+            console.print("[green]VectorXLite servers stopped[/green]")
             return True
         else:
             console.print("[yellow]No PIDs found in VectorXLite PID file[/yellow]")
@@ -125,7 +115,7 @@ def stop_vector_servers(cluster_dir: Path) -> bool:
     killed = kill_processes_by_name(patterns)
 
     if killed > 0:
-        console.print(f"[green]✓ Killed {killed} VectorXLite processes[/green]")
+        console.print(f"[green]Killed {killed} VectorXLite processes[/green]")
         return True
     else:
         console.print("[dim]No VectorXLite processes found[/dim]")
@@ -161,7 +151,7 @@ def main():
     else:
         console.print("[yellow]VectorXLite servers left running (use --with-vector-server to stop them)[/yellow]")
 
-    console.print("\n[green]✓ Done![/green]")
+    console.print("\n[green]Done![/green]")
 
 
 if __name__ == "__main__":
