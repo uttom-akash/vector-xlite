@@ -1,15 +1,5 @@
 #!/usr/bin/env python3
-"""
-Generate Go protobuf files for VectorXLite
-
-Prerequisites:
-  - protoc (Protocol Buffer compiler)
-  - protoc-gen-go: go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
-  - protoc-gen-go-grpc: go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
-
-Run this from the vector-db-rs root directory:
-  python tools/generate_protos.py
-"""
+"""Generate Go protobuf files for VectorXLite."""
 
 import subprocess
 import sys
@@ -21,7 +11,6 @@ console = Console()
 
 
 def run_command(cmd: list[str], cwd: Path = None) -> tuple[int, str, str]:
-    """Run a command and return exit code, stdout, stderr"""
     result = subprocess.run(
         cmd,
         cwd=cwd,
@@ -32,7 +21,6 @@ def run_command(cmd: list[str], cwd: Path = None) -> tuple[int, str, str]:
 
 
 def generate_vectorxlite_protos(root_dir: Path) -> bool:
-    """Generate VectorXLite gRPC protos (standalone client)"""
     console.print("\n[yellow]Generating VectorXLite protos...[/yellow]")
 
     proto_file = root_dir / "proto" / "vectorxlite" / "v1" / "vectorxlite.proto"
@@ -74,7 +62,7 @@ def generate_vectorxlite_protos(root_dir: Path) -> bool:
         except OSError:
             pass
 
-    console.print("[green]✓ VectorXLite protos generated successfully[/green]")
+    console.print("[green]VectorXLite protos generated successfully[/green]")
 
     # List generated files
     pb_files = list(output_dir.glob("*.pb.go"))
@@ -87,7 +75,6 @@ def generate_vectorxlite_protos(root_dir: Path) -> bool:
 
 
 def generate_cluster_protos(root_dir: Path) -> bool:
-    """Generate Cluster protos (distributed cluster)"""
     console.print("\n[yellow]Generating Cluster protos...[/yellow]")
 
     proto_file = root_dir / "proto" / "cluster" / "v1" / "cluster.proto"
@@ -129,7 +116,7 @@ def generate_cluster_protos(root_dir: Path) -> bool:
         except OSError:
             pass
 
-    console.print("[green]✓ Cluster protos generated successfully[/green]")
+    console.print("[green]Cluster protos generated successfully[/green]")
 
     # List generated files
     pb_files = list(output_dir.glob("*.pb.go"))
@@ -167,10 +154,10 @@ def main():
         success = False
 
     if success:
-        console.print("\n[bold green]✓ All proto files generated successfully![/bold green]")
+        console.print("\n[bold green]All proto files generated successfully![/bold green]")
         sys.exit(0)
     else:
-        console.print("\n[bold red]✗ Some proto generation failed[/bold red]")
+        console.print("\n[bold red]Some proto generation failed[/bold red]")
         sys.exit(1)
 
 

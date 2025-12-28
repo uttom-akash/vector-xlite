@@ -20,7 +20,7 @@
 
 **VectorXLite** is a high-performance vector database built on SQLite with HNSW-based approximate nearest neighbor search. It combines the power of vector similarity with the flexibility of SQL for metadata filtering, making it ideal for AI/ML applications, semantic search, and recommendation systems.
 
-### 🎯 Three Deployment Modes
+### Three Deployment Modes
 
 VectorXLite adapts to your needs with three distinct deployment modes:
 
@@ -28,7 +28,7 @@ VectorXLite adapts to your needs with three distinct deployment modes:
 <tr>
 <td width="33%" valign="top">
 
-### 📦 **Embedded**
+### **Embedded**
 **In-process library**
 
 Direct Rust library integration with zero network overhead.
@@ -48,7 +48,7 @@ App → VectorXLite
 </td>
 <td width="33%" valign="top">
 
-### 🚀 **Standalone**
+### **Standalone**
 **gRPC Server**
 
 Language-agnostic server for remote access.
@@ -69,7 +69,7 @@ Client → gRPC
 </td>
 <td width="33%" valign="top">
 
-### 🌐 **Distributed**
+### **Distributed**
 **Raft Cluster**
 
 High-availability cluster with consensus.
@@ -134,7 +134,7 @@ Client → Cluster
 
 ## Quick Start by Mode
 
-### 📦 Embedded Mode
+### Embedded Mode
 
 ```rust
 use vector_xlite::{VectorXLite, customizer::SqliteConnectionCustomizer, types::*};
@@ -189,7 +189,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 [**Full Guide →**](embedded/)
 
-### 🚀 Standalone Mode
+### Standalone Mode
 
 ```bash
 # Start the gRPC server
@@ -203,7 +203,7 @@ client, _ := client.NewVectorXLiteClient("localhost:50051")
 
 [**Full Guide →**](standalone/) *(Coming soon)*
 
-### 🌐 Distributed Mode
+### Distributed Mode
 
 ```bash
 # Start 3-node cluster with Raft consensus
@@ -285,8 +285,8 @@ vector-db-rs/
 cargo run -p embedded-examples --release
 
 # Output:
-# ✅ Inserted complex story points
-# 🚀 Search Results: [...]
+# Inserted complex story points
+# Search Results: [...]
 ```
 
 ### Run Tests

@@ -1,15 +1,5 @@
 #!/usr/bin/env python3
-"""
-Test VectorXLite - All Three Deployment Modes
-
-This script tests:
-1. Embedded Mode - Direct Rust library usage
-2. Standalone Mode - gRPC server with Go client
-3. Distributed Mode - Raft cluster (manual test instructions)
-
-Usage:
-    python tools/test_all_modes.py
-"""
+"""Test VectorXLite across all three deployment modes."""
 
 import subprocess
 import sys
@@ -23,7 +13,6 @@ console = Console()
 
 
 def test_embedded_mode(root_dir: Path) -> bool:
-    """Test Embedded Mode"""
     console.print(Panel.fit(
         "[bold blue]Test 1/3: Embedded Mode[/bold blue]",
         subtitle="Direct Rust library usage"
@@ -53,7 +42,7 @@ def test_embedded_mode(root_dir: Path) -> bool:
             if line.strip():
                 console.print(f"  {line}")
 
-        console.print("\n[bold green]✓ Embedded mode works[/bold green]")
+        console.print("\n[bold green]Embedded mode works[/bold green]")
         return True
     else:
         console.print(f"[red]Error running embedded examples:[/red]")
@@ -62,7 +51,6 @@ def test_embedded_mode(root_dir: Path) -> bool:
 
 
 def test_standalone_mode(root_dir: Path) -> bool:
-    """Test Standalone Mode"""
     console.print(Panel.fit(
         "[bold blue]Test 2/3: Standalone Mode[/bold blue]",
         subtitle="gRPC server with Go client"
@@ -123,19 +111,18 @@ def test_standalone_mode(root_dir: Path) -> bool:
 
     # Check results
     if "Search Results" in result.stdout or result.returncode == 0:
-        console.print("\n[bold green]✓ Standalone mode works[/bold green]")
+        console.print("\n[bold green]Standalone mode works[/bold green]")
         console.print("\n[dim]Sample output:[/dim]")
         for line in result.stdout.split('\n')[:15]:
             if line.strip():
                 console.print(f"  {line}")
         return True
     else:
-        console.print("[yellow]⚠ Standalone test completed (check /tmp/go_client.log for details)[/yellow]")
+        console.print("[yellow]Standalone test completed (check /tmp/go_client.log for details)[/yellow]")
         return True  # Don't fail completely
 
 
 def show_distributed_instructions():
-    """Show instructions for testing distributed mode"""
     console.print(Panel.fit(
         "[bold blue]Test 3/3: Distributed Mode[/bold blue]",
         subtitle="Raft cluster (manual test required)"
@@ -146,7 +133,7 @@ def show_distributed_instructions():
     console.print("  [cyan]python tools/start_cluster.py[/cyan]")
     console.print("  [cyan]python tools/test_operations.py[/cyan]")
     console.print("  [cyan]python tools/stop_cluster.py[/cyan]")
-    console.print("\n[yellow]⚠ Distributed test skipped (requires full cluster setup)[/yellow]")
+    console.print("\n[yellow]Distributed test skipped (requires full cluster setup)[/yellow]")
 
 
 def main():
@@ -191,15 +178,15 @@ def main():
     ))
 
     console.print("\n[bold]Summary:[/bold]")
-    console.print(f"  {'✓' if results['embedded'] else '✗'} Embedded mode: {'Working' if results['embedded'] else 'Failed'}")
-    console.print(f"  {'✓' if results['standalone'] else '✗'} Standalone mode: {'Working' if results['standalone'] else 'Failed'}")
-    console.print(f"  ⚠ Distributed mode: Manual test required")
+    console.print(f"  {'[OK]' if results['embedded'] else '[FAIL]'} Embedded mode: {'Working' if results['embedded'] else 'Failed'}")
+    console.print(f"  {'[OK]' if results['standalone'] else '[FAIL]'} Standalone mode: {'Working' if results['standalone'] else 'Failed'}")
+    console.print(f"  [SKIP] Distributed mode: Manual test required")
 
     if results["embedded"] and results["standalone"]:
-        console.print("\n[bold green]✓ All automated tests passed![/bold green]")
+        console.print("\n[bold green]All automated tests passed![/bold green]")
         sys.exit(0)
     else:
-        console.print("\n[bold yellow]⚠ Some tests failed[/bold yellow]")
+        console.print("\n[bold yellow]Some tests failed[/bold yellow]")
         sys.exit(1)
 
 

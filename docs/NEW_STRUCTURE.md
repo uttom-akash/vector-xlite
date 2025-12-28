@@ -458,21 +458,21 @@ prost = "0.12"
 
 ## Choose Your Deployment Mode
 
-### 📦 Embedded Mode
+### Embedded Mode
 **Best for:** Single applications, development, testing
 - Direct in-process access
 - Zero network overhead
 - Simple integration
 → [Get Started](embedded/README.md)
 
-### 🚀 Standalone Mode
+### Standalone Mode
 **Best for:** Multi-language clients, microservices
 - Language-agnostic gRPC access
 - Remote operations
 - Easy client integration
 → [Get Started](standalone/README.md)
 
-### 🌐 Distributed Mode
+### Distributed Mode
 **Best for:** Production, high availability, fault tolerance
 - Raft consensus protocol
 - Automatic failover
@@ -492,14 +492,14 @@ Distributed:   Client → Cluster (Raft) → gRPC Server → VectorXLite Library
 
 ## Benefits of This Structure
 
-### ✅ **Clear Mode Separation**
+### **Clear Mode Separation**
 ```
 embedded/     → In-process library usage
 standalone/   → Single server deployment
 distributed/  → Multi-node cluster
 ```
 
-### ✅ **Intuitive Navigation**
+### **Intuitive Navigation**
 ```
 Want embedded library? → embedded/
 Want gRPC server? → standalone/
@@ -508,13 +508,13 @@ Want examples? → [mode]/examples/
 Want docs? → docs/[mode]/
 ```
 
-### ✅ **Independent Evolution**
+### **Independent Evolution**
 - Each mode can evolve independently
 - Mode-specific optimizations
 - Clear separation of concerns
 - Easy to add features per mode
 
-### ✅ **Shared Components**
+### **Shared Components**
 - `proto/` - Single source of truth for APIs
 - `tests/` - Comprehensive testing across modes
 - `docs/` - Unified documentation
@@ -533,7 +533,7 @@ raft.go      → raft.go         # Keep as-is (clear enough)
 
 ## Next Steps
 
-1. ✅ Review structure (current step)
+1. [x] Review structure (current step)
 2. Create migration script with git history preservation
 3. Execute migration in phases
 4. Update imports and paths

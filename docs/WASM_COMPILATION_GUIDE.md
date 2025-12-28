@@ -458,12 +458,12 @@ Create `index.html`:
 
                 // Initialize WASM
                 await init();
-                output.textContent += 'WASM initialized ✓\n\n';
+                output.textContent += 'WASM initialized\n\n';
 
                 // Create database instance
                 output.textContent += 'Creating database instance...\n';
                 const db = new VectorXLiteWasm();
-                output.textContent += 'Database created ✓\n\n';
+                output.textContent += 'Database created\n\n';
 
                 // Create collection
                 output.textContent += 'Creating collection...\n';
@@ -479,7 +479,7 @@ Create `index.html`:
                     )`,
                     max_elements: 10000
                 });
-                output.textContent += 'Collection created ✓\n\n';
+                output.textContent += 'Collection created\n\n';
 
                 // Generate sample vector (384 dimensions)
                 const vector = new Array(384).fill(0).map(() => Math.random() - 0.5);
@@ -493,12 +493,12 @@ Create `index.html`:
                     payload_query: `INSERT INTO documents(rowid, title, content, category)
                                    VALUES (?1, 'Sample Document', 'This is a test', 'general')`
                 });
-                output.textContent += 'Vector inserted ✓\n\n';
+                output.textContent += 'Vector inserted\n\n';
 
                 // Check if collection exists
                 output.textContent += 'Checking collection existence...\n';
                 const exists = await db.collectionExists("documents");
-                output.textContent += `Collection exists: ${exists} ✓\n\n`;
+                output.textContent += `Collection exists: ${exists}\n\n`;
 
                 // Search
                 output.textContent += 'Searching for similar vectors...\n';
